@@ -8,3 +8,6 @@ networkx==3.3
 numpy==1.26.4
 scipy==1.13.1
 pytest==8.3.3
+osmnx==1.9.4
+sumolib==1.20.0
+traci==1.20.0
