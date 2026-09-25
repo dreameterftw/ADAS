@@ -8,4 +8,5 @@ venv/
 data/maps/*.osm
 data/maps/*.net.xml
 *.log
+cache/
 .DS_Store
