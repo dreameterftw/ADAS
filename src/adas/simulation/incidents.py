@@ -1,0 +1,1 @@
+"""Synthetic emergency incident generation."""

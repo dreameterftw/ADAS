@@ -1,0 +1,1 @@
+"""Simulated annealing dispatch baseline."""

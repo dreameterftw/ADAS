@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+*.egg-info/
+.ipynb_checkpoints/
+data/maps/*.osm
+data/maps/*.net.xml
+*.log
+.DS_Store
