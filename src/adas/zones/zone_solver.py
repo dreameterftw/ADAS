@@ -14,8 +14,11 @@ def solve_zone(
 	zone_nodes: list[int],
 	incidents: list[Incident],
 	ambulances: list[Ambulance],
+	max_qubits: int = 20,
 ) -> OptimizationResult | None:
 	"""Solve dispatch for incidents and available ambulances in one zone."""
+	if isinstance(max_qubits, bool) or not isinstance(max_qubits, int) or max_qubits < 1:
+		raise ValueError("max_qubits must be a positive integer")
 	zone_node_set = set(zone_nodes)
 	zone_incidents = [
 		incident for incident in incidents if incident.location_node in zone_node_set
@@ -29,6 +32,11 @@ def solve_zone(
 		return None
 
 	program = build_dispatch_qubo(graph, zone_incidents, zone_ambulances)
+	if program.get_num_vars() > max_qubits:
+		raise ValueError(
+			f"zone QUBO has {program.get_num_vars()} variables, exceeding "
+			f"the configured limit of {max_qubits}"
+		)
 	return solve_with_qaoa(program, use_warm_start=True)
 
 
@@ -37,6 +45,7 @@ def solve_all_zones(
 	zone_map: dict[int, int],
 	incidents: list[Incident],
 	ambulances: list[Ambulance],
+	max_qubits: int = 20,
 ) -> dict[int, OptimizationResult]:
 	"""Solve every non-empty zone and return results keyed by zone ID."""
 	results: dict[int, OptimizationResult] = {}
@@ -46,6 +55,7 @@ def solve_all_zones(
 			zone_members(zone_map, zone_id),
 			incidents,
 			ambulances,
+			max_qubits=max_qubits,
 		)
 		if result is not None:
 			results[zone_id] = result

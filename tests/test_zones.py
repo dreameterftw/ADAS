@@ -13,7 +13,7 @@ from adas.zones.partition import (
 	partition_into_zones,
 	zone_members,
 )
-from adas.zones.zone_solver import solve_all_zones
+from adas.zones.zone_solver import solve_all_zones, solve_zone
 
 
 def make_optimization_result(variable_names: list[str], values: list[float]):
@@ -83,6 +83,18 @@ def test_solve_all_zones_runs_each_zone_independently():
 	assert all(result.x is not None for result in results.values())
 	assert all(len(result.x) <= 20 for result in results.values())
 	assert all(result.variable_names == ["x_10_20"] or result.variable_names == ["x_11_21"] for result in results.values())
+
+
+def test_zone_solver_rejects_qubo_over_qubit_budget():
+	graph = nx.MultiDiGraph()
+	for ambulance_node in range(5):
+		for incident_node in range(5, 10):
+			graph.add_edge(ambulance_node, incident_node, travel_time=1.0)
+	incidents = [Incident(index, index + 5, 3, index) for index in range(5)]
+	ambulances = [Ambulance(index, index) for index in range(5)]
+
+	with pytest.raises(ValueError, match="25 variables.*limit of 20"):
+		solve_zone(graph, list(range(10)), incidents, ambulances)
 
 
 def test_reconcile_reassigns_boundary_incident_to_better_free_neighbor():
