@@ -29,14 +29,29 @@ def test_dispatch_qubo_uses_severity_and_at_most_one_constraints():
 
 	assert qp.get_num_vars() == 4
 	assert qp.objective.linear.to_dict() == {
-		0: -61.0,
-		1: -36.0,
-		2: -66.0,
-		3: -70.0,
+		0: -69.0,
+		1: -64.0,
+		2: -46.0,
+		3: -66.0,
 	}
 	assert len(qp.linear_constraints) == 4
 	assert all(constraint.sense.name == "LE" for constraint in qp.linear_constraints)
 	assert all(constraint.rhs == 1 for constraint in qp.linear_constraints)
+
+
+def test_higher_urgency_severity_has_more_attractive_objective_coefficient():
+	graph = nx.MultiDiGraph()
+	graph.add_edge(1, 2, travel_time=10.0)
+	ambulance = Ambulance(10, 1)
+	low_urgency = Incident(1, 2, 1, 0)
+	high_urgency = Incident(2, 2, 5, 0)
+
+	qp_low = build_dispatch_qubo(graph, [low_urgency], [ambulance])
+	qp_high = build_dispatch_qubo(graph, [high_urgency], [ambulance])
+	coefficient_low = qp_low.objective.linear.to_dict()[0]
+	coefficient_high = qp_high.objective.linear.to_dict()[0]
+
+	assert coefficient_high < coefficient_low
 
 
 def test_brute_force_finds_maximum_cardinality_minimum_cost_dispatch():
@@ -46,7 +61,7 @@ def test_brute_force_finds_maximum_cardinality_minimum_cost_dispatch():
 	best_x, best_value = brute_force_solve(qp)
 
 	assert best_x == [1, 0, 0, 1]
-	assert best_value == -131.0
+	assert best_value == -135.0
 
 
 def test_brute_force_checks_three_by_three_constraints():
@@ -64,7 +79,7 @@ def test_brute_force_checks_three_by_three_constraints():
 	assert len(qp.linear_constraints) == 6
 	assert best_x is not None
 	assert sum(best_x) == 3
-	assert best_value == -21.0
+	assert best_value == -39.0
 	assert all(sum(best_x[row * 3 : (row + 1) * 3]) <= 1 for row in range(3))
 	assert all(
 		sum(best_x[row * 3 + column] for row in range(3)) <= 1
@@ -84,3 +99,17 @@ def test_unreachable_ambulance_incident_pair_cannot_be_selected():
 
 	assert best_x == [1, 0]
 	assert any(constraint.name == "unreachable_1_11" for constraint in qp.linear_constraints)
+
+
+def test_unavailable_ambulance_cannot_be_selected():
+	graph = nx.MultiDiGraph()
+	graph.add_edge(1, 3, travel_time=1.0)
+	graph.add_edge(2, 3, travel_time=1.0)
+	incidents = [Incident(1, 3, 3, 0)]
+	ambulances = [Ambulance(10, 1), Ambulance(11, 2, available=False)]
+	qp = build_dispatch_qubo(graph, incidents, ambulances)
+
+	best_x, _ = brute_force_solve(qp)
+
+	assert best_x == [1, 0]
+	assert any(constraint.name == "unavailable_1_11" for constraint in qp.linear_constraints)

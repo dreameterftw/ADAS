@@ -18,6 +18,8 @@ def build_dispatch_qubo(
 		raise ValueError("incident IDs must be unique")
 	if len(set(ambulance_ids)) != len(ambulance_ids):
 		raise ValueError("ambulance IDs must be unique")
+	if any(not 1 <= incident.severity <= 5 for incident in incidents):
+		raise ValueError("incident severity must be between 1 and 5")
 
 	qp = QuadraticProgram(name="dispatch_assignment")
 	var_names: dict[tuple[int, int], str] = {}
@@ -28,6 +30,7 @@ def build_dispatch_qubo(
 			var_names[(incident.id, ambulance.id)] = name
 
 	pair_costs: dict[tuple[int, int], float] = {}
+	travel_times: dict[tuple[int, int], float] = {}
 	unreachable_pairs: list[tuple[int, int]] = []
 	for incident in incidents:
 		for ambulance in ambulances:
@@ -41,20 +44,19 @@ def build_dispatch_qubo(
 			except (nx.NetworkXNoPath, nx.NodeNotFound):
 				unreachable_pairs.append((incident.id, ambulance.id))
 				continue
+			travel_times[(incident.id, ambulance.id)] = float(travel_time)
 			pair_costs[(incident.id, ambulance.id)] = (
-				float(travel_time) * incident.severity
+				float(travel_time) * (6 - incident.severity)
 			)
 
 	max_assignments = min(len(incidents), len(ambulances))
-	max_pair_cost = max(pair_costs.values(), default=0.0)
+	max_pair_cost = max(travel_times.values(), default=0.0) * 5
 	assignment_reward = max_assignments * max_pair_cost + 1.0
 	linear = {
 		var_names[pair]: cost - assignment_reward
 		for pair, cost in pair_costs.items()
 	}
-	linear.update(
-		{var_names[pair]: 1e6 for pair in unreachable_pairs}
-	)
+	linear.update({var_names[pair]: 0.0 for pair in unreachable_pairs})
 	qp.minimize(linear=linear)
 
 	for incident_id, ambulance_id in unreachable_pairs:
@@ -64,6 +66,15 @@ def build_dispatch_qubo(
 			rhs=0,
 			name=f"unreachable_{incident_id}_{ambulance_id}",
 		)
+	for ambulance in ambulances:
+		if not ambulance.available:
+			for incident in incidents:
+				qp.linear_constraint(
+					linear={var_names[(incident.id, ambulance.id)]: 1},
+					sense="==",
+					rhs=0,
+					name=f"unavailable_{incident.id}_{ambulance.id}",
+				)
 
 	for incident in incidents:
 		coefficients = {

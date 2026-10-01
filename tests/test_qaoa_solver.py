@@ -30,6 +30,25 @@ def test_qaoa_matches_brute_force_on_tiny_case(use_warm_start: bool):
 	assert all(sum(bits[row * 2 + column] for row in range(2)) <= 1 for column in range(2))
 
 
+def test_qaoa_respects_assignment_constraints_on_three_by_three_case():
+	graph = nx.MultiDiGraph()
+	for ambulance_node in range(3):
+		for incident_node in range(3, 6):
+			graph.add_edge(ambulance_node, incident_node, travel_time=1.0)
+	incidents = [Incident(index, index + 3, 3, index) for index in range(3)]
+	fleet = [Ambulance(index, index) for index in range(3)]
+	qp = build_dispatch_qubo(graph, incidents, fleet)
+
+	_, brute_force_value = brute_force_solve(qp)
+	qaoa_result = solve_with_qaoa(qp, use_warm_start=False)
+	bits = [round(float(value)) for value in qaoa_result.x]
+
+	assert sum(bits) == 3
+	assert all(sum(bits[row * 3 : (row + 1) * 3]) <= 1 for row in range(3))
+	assert all(sum(bits[row * 3 + column] for row in range(3)) <= 1 for column in range(3))
+	assert abs(qaoa_result.fval - brute_force_value) < abs(brute_force_value) * 0.3 + 1.0
+
+
 def test_constraint_penalty_scales_with_dispatch_objective():
 	graph = nx.MultiDiGraph()
 	for ambulance_node in (1, 2):
