@@ -6,14 +6,19 @@ import networkx as nx
 from qiskit_optimization.algorithms import OptimizationResult
 
 from adas.baselines.base import Assignment
+from adas.quantum.fallback_solver import FallbackResult
 from adas.simulation.incidents import Ambulance, Incident
 
 
 def _flatten_assignments(
-	zone_assignments: dict[int, OptimizationResult],
+	zone_assignments: dict[int, OptimizationResult | FallbackResult],
 ) -> dict[int, int]:
 	current: dict[int, int] = {}
 	for result in zone_assignments.values():
+		if isinstance(result, dict):
+			for assignment in result["assignment"]:
+				current[assignment.incident_id] = assignment.ambulance_id
+			continue
 		if result.x is None:
 			continue
 		for name, value in zip(result.variable_names, result.x):
@@ -47,7 +52,7 @@ def reconcile_boundaries(
 	graph: nx.MultiDiGraph,
 	zone_map: dict[int, int],
 	boundary_nodes: set[int],
-	zone_assignments: dict[int, OptimizationResult],
+	zone_assignments: dict[int, OptimizationResult | FallbackResult],
 	incidents: list[Incident],
 	ambulances: list[Ambulance],
 	improvement_threshold_sec: float = 30.0,

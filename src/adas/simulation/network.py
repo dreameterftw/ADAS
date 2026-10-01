@@ -1,5 +1,7 @@
 """Load road networks and expose travel-time graph helpers."""
 
+import logging
+
 import networkx as nx
 
 
@@ -47,6 +49,8 @@ def shortest_travel_time(
 
 
 if __name__ == "__main__":
+	logging.basicConfig(level=logging.INFO)
+	logger = logging.getLogger(__name__)
 	city_graph = load_city_network("Andheri, Mumbai, India")
-	print(f"Nodes: {len(city_graph.nodes)}, Edges: {len(city_graph.edges)}")
-	print(f"Sample intersections: {get_intersections(city_graph, limit=20)}")
+	logger.info("Nodes: %d, edges: %d", len(city_graph.nodes), len(city_graph.edges))
+	logger.info("Sample intersections: %s", get_intersections(city_graph, limit=20))

@@ -9,7 +9,7 @@ router = APIRouter()
 
 
 @router.post("/replan")
-def replan_assignments() -> list[dict[str, int | float]]:
+def replan_assignments() -> list[dict[str, int | float | str | None]]:
 	state = get_simulation_state()
 	orchestrator = get_orchestrator()
 	assignments = orchestrator.replan(state)
@@ -18,6 +18,13 @@ def replan_assignments() -> list[dict[str, int | float]]:
 			"incident_id": assignment.incident_id,
 			"ambulance_id": assignment.ambulance_id,
 			"travel_time_sec": assignment.travel_time_sec,
+			"solver_method": orchestrator.last_solver_methods.get(
+				assignment.incident_id,
+				"unknown",
+			),
+			"fallback_reason": orchestrator.last_fallback_reasons.get(
+				assignment.incident_id
+			),
 		}
 		for assignment in assignments
 	]

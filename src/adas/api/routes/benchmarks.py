@@ -13,6 +13,10 @@ router = APIRouter()
 _cached_results: dict[str, list[dict[str, int | float]]] = {}
 
 
+def clear_benchmark_cache() -> None:
+	_cached_results.clear()
+
+
 @router.get("/summary")
 def benchmark_summary() -> dict[str, str]:
 	return {"status": "not yet implemented; see Phase 9"}
