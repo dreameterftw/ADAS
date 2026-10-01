@@ -42,13 +42,27 @@ def build_distribution_loader(
 	return circuit
 
 
-def estimate_on_time_probability(
+class _CountingAerSampler(AerSampler):
+	"""Aer sampler that records the number of actual measurement shots."""
+
+	def __init__(self, shots: int = 1024) -> None:
+		self.shots = shots
+		self.total_shots = 0
+		super().__init__(run_options={"seed": 1, "shots": shots})
+
+	def run(self, circuits, parameter_values=None, **run_options):
+		circuit_count = 1 if isinstance(circuits, QuantumCircuit) else len(circuits)
+		self.total_shots += circuit_count * run_options.get("shots", self.shots)
+		return super().run(circuits, parameter_values=parameter_values, **run_options)
+
+
+def estimate_on_time_probability_with_stats(
 	bin_edges: np.ndarray,
 	probabilities: np.ndarray,
 	threshold_sec: float,
 	epsilon_target: float = 0.01,
-) -> float:
-	"""Estimate the probability that a bin midpoint is within the threshold."""
+) -> tuple[float, int, int]:
+	"""Return the estimate, Grover queries, and actual sampler measurement shots."""
 	edges = np.asarray(bin_edges, dtype=float)
 	if edges.ndim != 1 or edges.size < 2:
 		raise ValueError("bin_edges must be a one-dimensional array with at least two values")
@@ -84,10 +98,31 @@ def estimate_on_time_probability(
 		state_preparation=circuit.decompose(reps=10),
 		objective_qubits=[num_qubits],
 	)
+	sampler = _CountingAerSampler()
 	estimator = IterativeAmplitudeEstimation(
 		epsilon_target=epsilon_target,
 		alpha=0.05,
-		sampler=AerSampler(run_options={"seed": 1}),
+		sampler=sampler,
 	)
 	result = estimator.estimate(problem)
-	return float(result.estimation)
+	return (
+		float(result.estimation),
+		int(result.num_oracle_queries),
+		sampler.total_shots,
+	)
+
+
+def estimate_on_time_probability(
+	bin_edges: np.ndarray,
+	probabilities: np.ndarray,
+	threshold_sec: float,
+	epsilon_target: float = 0.01,
+) -> float:
+	"""Estimate the probability that a bin midpoint is within the threshold."""
+	estimate, _, _ = estimate_on_time_probability_with_stats(
+		bin_edges,
+		probabilities,
+		threshold_sec,
+		epsilon_target,
+	)
+	return estimate

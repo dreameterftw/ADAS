@@ -39,6 +39,14 @@ def get_simulation_state() -> SimulationState:
 	return _state
 
 
+def get_graph() -> nx.MultiDiGraph:
+	"""Return the graph used by the shared simulation, initializing if needed."""
+	if _graph is None:
+		init_simulation()
+	assert _graph is not None
+	return _graph
+
+
 def get_orchestrator() -> Orchestrator:
 	if _orchestrator is None:
 		init_simulation()
