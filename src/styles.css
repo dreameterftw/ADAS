@@ -1,0 +1,57 @@
+:root {
+  --bg: #0F1115;
+  --panel: #141A24;
+  --line: #262C38;
+  --ink: #F4F5F7;
+  --ink-soft: #8B93A3;
+  --signal: #C8402A;
+  --confidence: #2F6F62;
+}
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Inter", sans-serif;
+}
+.dashboard { display: flex; flex-direction: column; height: 100%; }
+
+.topbar {
+  display: flex; align-items: center; gap: 20px;
+  padding: 14px 20px; border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+.brand { font-family: "Space Grotesk", sans-serif; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.brand .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--signal); }
+.status { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-soft); }
+.status.live .status-dot { background: var(--confidence); }
+.status.down .status-dot { background: var(--signal); }
+
+button { font-family: Inter, sans-serif; cursor: pointer; border-radius: 6px; padding: 8px 14px; font-size: 13.5px; border: none; background: var(--ink); color: var(--bg); }
+button.ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+
+.dashboard-body { display: flex; flex: 1; min-height: 0; }
+.map-pane { flex: 1; }
+.sidebar { width: 340px; background: var(--panel); border-left: 1px solid var(--line); display: flex; flex-direction: column; padding: 16px; overflow-y: auto; }
+.sidebar-header { display: flex; justify-content: space-between; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); margin: 18px 0 10px; }
+.sidebar-header:first-child { margin-top: 0; }
+.muted { color: var(--ink-soft); }
+.small { font-size: 13px; }
+
+.incident-card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+.incident-row { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.severity-badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 100px; background: var(--line); }
+.sev-4, .sev-5 { background: var(--signal); color: white; }
+
+.solver-log { font-family: "Space Mono", "Courier New", monospace; font-size: 11.5px; background: #0A0C10; border: 1px solid var(--line); border-radius: 8px; padding: 10px; max-height: 220px; overflow-y: auto; }
+.log-line { color: var(--ink-soft); margin-bottom: 4px; }
+
+.sidebar-actions { margin-top: auto; display: flex; gap: 8px; padding-top: 16px; }
+
+/* Leaflet marker styling */
+.map-pulse-wrap { position: relative; width: 18px; height: 18px; }
+.map-pulse-dot { position: absolute; top: 5px; left: 5px; width: 8px; height: 8px; border-radius: 50%; }
+.map-pulse-ring { position: absolute; inset: 0; border: 2px solid; border-radius: 50%; opacity: 0; animation: mapPulse 2.2s ease-out infinite; }
+@keyframes mapPulse { 0% { opacity: 0.7; transform: scale(0.3);} 80% { opacity: 0; transform: scale(2.4);} 100% { opacity: 0; transform: scale(2.4);} }
+.map-hospital-ring { width: 14px; height: 14px; border: 2px solid #2F6F62; border-radius: 50%; background: rgba(47,111,98,0.15); }
