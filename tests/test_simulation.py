@@ -5,7 +5,12 @@ import pytest
 
 from adas.simulation.incidents import generate_ambulance_fleet, generate_incidents
 from adas.simulation.lightweight_sim import congestion_factor, travel_time_at
-from adas.simulation.network import get_intersections, shortest_travel_time
+from adas.simulation.network import (
+	get_intersections,
+	get_route_latlon,
+	load_bundled_road_network,
+	shortest_travel_time,
+)
 
 
 def make_test_graph() -> nx.MultiDiGraph:
@@ -36,6 +41,18 @@ def test_network_helpers_and_lightweight_travel_time():
     assert get_intersections(graph, limit=1) == [1]
     assert congestion_factor(500, 1000) > congestion_factor(0, 1000)
     assert travel_time_at(graph, 1, 3, 500, 1000) == 75.0
+
+
+def test_bundled_showcase_route_uses_openstreetmap_road_edges():
+	graph = load_bundled_road_network()
+	source, target = 1936627942, 13633541081
+	path = nx.shortest_path(graph, source, target, weight="travel_time")
+	route = get_route_latlon(graph, path)
+
+	assert graph.graph["network_source"] == "OpenStreetMap"
+	assert len(path) > 2
+	assert len(route) == len(path)
+	assert all(graph.has_edge(left, right) for left, right in zip(path, path[1:]))
 
 
 def test_generators_reject_invalid_empty_graph_requests():

@@ -1,9 +1,11 @@
 """Load road networks and expose travel-time graph helpers."""
 
+import gzip
 import json
 import logging
 import math
 import re
+from pathlib import Path
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -247,6 +249,39 @@ def load_city_network(
 		graph = ox.graph_from_point(center, dist=3000, network_type=network_type)
 	graph = ox.add_edge_speeds(graph)
 	return ox.add_edge_travel_times(graph)
+
+
+def load_bundled_road_network() -> nx.MultiDiGraph:
+	"""Load the small, attributed Andheri OpenStreetMap network used by the showcase."""
+	data_path = Path(__file__).parent.parent / "data" / "andheri_osm_roads.json.gz"
+	with gzip.open(data_path, "rt", encoding="utf-8") as source:
+		payload = json.load(source)
+	if payload.get("source") != "OpenStreetMap" or not payload.get("nodes") or not payload.get("edges"):
+		raise ValueError("Bundled road network is missing its OpenStreetMap data")
+
+	graph = nx.MultiDiGraph(crs="EPSG:4326", name=str(payload.get("place", "Andheri, Mumbai, India")))
+	graph.graph["network_source"] = "OpenStreetMap"
+	graph.graph["extract_date"] = str(payload.get("extract_date", ""))
+	graph.graph["route_geometry"] = "road_network"
+	for node in payload["nodes"]:
+		graph.add_node(int(node["id"]), y=float(node["lat"]), x=float(node["lon"]))
+	major_highways = {"motorway", "trunk", "primary", "secondary", "tertiary"}
+	for edge in payload["edges"]:
+		highway = str(edge.get("highway", "road"))
+		travel_time = max(1.0, float(edge.get("travel_time", 60.0)))
+		attributes = {
+			"length": float(edge.get("length", 0.0)),
+			"travel_time": travel_time,
+			"base_travel_time": travel_time,
+			"highway": highway,
+			"major_corridor": highway in major_highways,
+			"traffic_level": "normal",
+		}
+		for optional in ("name", "maxspeed"):
+			if edge.get(optional):
+				attributes[optional] = str(edge[optional])
+		graph.add_edge(int(edge["source"]), int(edge["target"]), **attributes)
+	return graph
 
 
 def get_intersections(

@@ -4,6 +4,8 @@ Base URL: `http://127.0.0.1:8000`. Start locally with `PYTHONPATH=src python -m 
 
 Dispatch state and the operator request log are held in memory and reset when the process restarts. The road graph is loaded lazily the first time a route needs simulation data; `/health` does not trigger a network download. Most operator endpoints are intended for a controlled presentation environment and do not provide user authentication. The inbound ambulance GPS webhook is disabled unless `AMBULANCE_WEBHOOK_BEARER_TOKEN` is configured and always requires that token.
 
+The repeatable Andheri response scenario uses a bundled OpenStreetMap road extract. Routes are calculated over directed road edges and returned as the coordinates of their road nodes, so the displayed line follows mapped streets. The extract is static; scenario traffic controls do not represent live traffic. `GET /map/state` includes a `network` object identifying the map-data source and extract date.
+
 | Method | Path | Purpose |
 | --- | --- | --- |
 | `GET` | `/health` | Process health; does not initialize the simulation. |

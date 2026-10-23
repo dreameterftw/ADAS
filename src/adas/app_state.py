@@ -1,5 +1,6 @@
 """Lazily initialized in-memory simulation state shared by API routes."""
 
+import math
 from threading import Lock
 
 import networkx as nx
@@ -13,7 +14,7 @@ from adas.simulation.incidents import (
 	generate_ambulance_fleet,
 	generate_incidents,
 )
-from adas.simulation.network import load_city_network
+from adas.simulation.network import load_bundled_road_network, load_city_network
 
 
 _graph: nx.MultiDiGraph | None = None
@@ -111,41 +112,58 @@ def init_demo_scenario() -> None:
 
 
 def init_showcase_scenario() -> None:
-	"""Load a repeatable multi-unit, multi-incident Mumbai response scenario."""
+	"""Load a repeatable response scenario whose positions snap to real OSM roads."""
 	global _graph, _state, _orchestrator, _hospitals, _traffic_mode
-	graph = nx.MultiDiGraph()
-	rows = columns = 6
-	for row in range(rows):
-		for column in range(columns):
-			node = row * columns + column + 1
-			graph.add_node(node, y=19.105 + row * 0.004, x=72.825 + column * 0.004)
-	for row in range(rows):
-		for column in range(columns):
-			node = row * columns + column + 1
-			for next_row, next_column in ((row + 1, column), (row, column + 1)):
-				if next_row >= rows or next_column >= columns:
-					continue
-				other = next_row * columns + next_column + 1
-				axis = "vertical" if next_row != row else "horizontal"
-				major = (axis == "horizontal" and row in {2, 3}) or (axis == "vertical" and column in {2, 3})
-				travel_time = 65.0 if axis == "horizontal" else 82.0
-				attributes = {"travel_time": travel_time, "base_travel_time": travel_time, "axis": axis, "major_corridor": major}
-				graph.add_edge(node, other, **attributes)
-				graph.add_edge(other, node, **attributes)
-	incidents = [
-		Incident(101, 5, 5, 0.0),
-		Incident(102, 16, 4, 0.0),
-		Incident(103, 27, 3, 0.0),
-		Incident(104, 34, 5, 0.0),
+	graph = load_bundled_road_network()
+	used_nodes: set[int] = set()
+	def road_node(latitude: float, longitude: float) -> int:
+		cosine = math.cos(math.radians(latitude))
+		node = min(
+			(node_id for node_id in graph if node_id not in used_nodes),
+			key=lambda node_id: (
+				(graph.nodes[node_id]["y"] - latitude) ** 2
+				+ ((graph.nodes[node_id]["x"] - longitude) * cosine) ** 2
+			),
+		)
+		used_nodes.add(node)
+		return node
+
+	ambulance_nodes = [
+		road_node(*point)
+		for point in (
+			(19.116, 72.840), (19.121, 72.842), (19.123, 72.850),
+			(19.118, 72.852), (19.1145, 72.847), (19.122, 72.846),
+		)
 	]
-	ambulances = [Ambulance(unit_id, node) for unit_id, node in zip((10, 11, 12, 13, 14, 15), (1, 8, 19, 26, 36, 12))]
+	incident_nodes = [
+		road_node(*point)
+		for point in (
+			(19.115, 72.851), (19.120, 72.840),
+			(19.122, 72.845), (19.117, 72.848),
+		)
+	]
+	hospital_nodes = [
+		road_node(*point)
+		for point in (
+			(19.123, 72.848), (19.115, 72.843),
+			(19.120, 72.852), (19.116, 72.847),
+		)
+	]
+	incidents = [
+		Incident(incident_id, node, severity, 0.0)
+		for incident_id, node, severity in zip((101, 102, 103, 104), incident_nodes, (5, 4, 3, 5))
+	]
+	ambulances = [
+		Ambulance(unit_id, node)
+		for unit_id, node in zip((10, 11, 12, 13, 14, 15), ambulance_nodes)
+	]
 	state = SimulationState(active_incidents=incidents, ambulances=ambulances)
 	orchestrator = Orchestrator(graph, max_nodes_per_zone=12, timeout_sec_per_zone=0.5)
 	hospitals = [
-		Hospital("H-A", 3, {"general", "cardiac"}, 3, 24),
-		Hospital("H-B", 15, {"general", "trauma"}, 2, 18),
-		Hospital("H-C", 29, {"general", "cardiac"}, 5, 32),
-		Hospital("H-D", 34, {"trauma"}, 1, 12),
+		Hospital("H-A", hospital_nodes[0], {"general", "cardiac"}, 3, 24),
+		Hospital("H-B", hospital_nodes[1], {"general", "trauma"}, 2, 18),
+		Hospital("H-C", hospital_nodes[2], {"general", "cardiac"}, 5, 32),
+		Hospital("H-D", hospital_nodes[3], {"trauma"}, 1, 12),
 	]
 	_graph, _state, _orchestrator, _hospitals = graph, state, orchestrator, hospitals
 	_traffic_mode = "normal"

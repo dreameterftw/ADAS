@@ -95,6 +95,17 @@ def get_map_state() -> dict[str, Any]:
 	return {
 		"current_time": state.current_time,
 		"traffic_mode": get_traffic_mode(),
+		"network": {
+			"source": graph.graph.get(
+				"network_source",
+				"OpenStreetMap" if graph.graph.get("crs") else "Schematic road network",
+			),
+			"route_geometry": graph.graph.get(
+				"route_geometry",
+				"road_network" if graph.graph.get("crs") else "schematic",
+			),
+			"extract_date": graph.graph.get("extract_date"),
+		},
 		"incidents": incident_items,
 		"ambulances": [
 			{
