@@ -182,7 +182,9 @@ def get_simulation_state() -> SimulationState:
 	if _state is None:
 		try:
 			init_simulation()
-		except (ImportError, OSError, RuntimeError, ValueError):
+		except Exception:
+			# External OSM providers may fail with transport or library-specific
+			# exceptions. Keep the API usable with the bundled response graph.
 			init_showcase_scenario()
 	assert _state is not None
 	return _state
@@ -193,7 +195,9 @@ def get_graph() -> nx.MultiDiGraph:
 	if _graph is None:
 		try:
 			init_simulation()
-		except (ImportError, OSError, RuntimeError, ValueError):
+		except Exception:
+			# External OSM providers may fail with transport or library-specific
+			# exceptions. Keep the API usable with the bundled response graph.
 			init_showcase_scenario()
 	assert _graph is not None
 	return _graph
