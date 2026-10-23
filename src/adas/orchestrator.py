@@ -66,6 +66,8 @@ class Orchestrator:
 			)
 			self.last_solver_methods = {}
 			self.last_fallback_reasons = {}
+			from adas.app_state import record_decision
+
 			for zone_id, result in zone_results.items():
 				if isinstance(result, dict):
 					method = result["method"]
@@ -73,6 +75,7 @@ class Orchestrator:
 				else:
 					method = "qaoa"
 					fallback_reason = None
+				record_decision(method)
 				for incident in state.active_incidents:
 					if self.zone_map.get(incident.location_node) == zone_id:
 						self.last_solver_methods[incident.id] = method

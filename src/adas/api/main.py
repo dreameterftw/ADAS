@@ -558,7 +558,7 @@ LANDING_PAGE_HTML = """
           <a href="#research">Research</a>
           <a href="#evidence">Evidence</a>
         </div>
-        <a class="nav-pill" href="#how">Explore ADAS →</a>
+        <a class="nav-pill" href="/dashboard?demo=1">Open live dashboard →</a>
       </nav>
     </header>
 
@@ -569,7 +569,7 @@ LANDING_PAGE_HTML = """
           <h1 id="hero-title">Every minute.<br />Every decision.<br /><span>Made together.</span></h1>
           <p>One ambulance. The right hospital. A clear route. ADAS connects the decisions that save time — when time matters most.</p>
           <div class="cta-row">
-            <a class="primary-btn" href="#how">See how it works →</a>
+            <a class="primary-btn" href="/dashboard?demo=1">Start dispatch demo →</a>
             <a class="secondary-btn" href="#quantum">Why quantum →</a>
           </div>
           <div class="footer-tag">Built for the complexity of Indian cities</div>
@@ -754,7 +754,7 @@ LANDING_PAGE_HTML = """
             <div class="eyebrow" style="color: var(--muted);">Every minute, decided together</div>
             <h2>A connected city.<br />A coordinated response.</h2>
           </div>
-          <a class="primary-btn" href="#how">Explore the approach →</a>
+          <a class="primary-btn" href="/dashboard?demo=1">Open live dashboard →</a>
         </div>
       </section>
     </main>
@@ -840,17 +840,17 @@ LANING_PAGE_HTML = """
       .lane-score { font-weight: 800; font-size: 1.15rem; }
       .lane-score.good { color: #1a6f54; }
       .lane-score.warn { color: var(--amber); }
-      @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } .header-row { display: block; } .nav { display:none; } }
+      @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } .header-row { display: block; } .nav { display:flex; gap:10px; flex-wrap:wrap; } }
     </style>
   </head>
   <body>
     <header class="topbar">
       <div class="wrap" style="display: flex; align-items: center; justify-content: space-between; width: min(1200px, calc(100% - 40px));">
         <a href="/" class="brand" aria-label="ADAS home"><span class="brand-mark">A</span>ADAS<span style="color: var(--amber);">.</span></a>
-        <nav class="nav" aria-label="Page navigation"><a href="/" class="active">Overview</a><a href="/laning">Lane plan</a><a href="#alerts">Alerts</a></nav>
+        <nav class="nav" aria-label="Page navigation"><a href="/">Overview</a><a href="/dashboard">Dashboard</a><a href="/laning" class="active">Lane plan</a><a href="/benchmarks">Benchmarks</a><a href="/driver">Driver</a><a href="/dashboard?demo=1#alerts">Alerts</a></nav>
       </div>
     </header>
-    <main class="page"><div class="wrap"><div class="header-row"><div><div class="eyebrow">LANE PLAN</div><h1>Connected route overview</h1></div><div class="status-pill"><span class="dot"></span> 94% confidence</div></div><div class="grid"><section class="panel map-panel"><div class="map-meta"><span>Current dispatch</span><strong>Andheri East → Sion Hospital</strong></div><div class="map-box"><svg viewBox="0 0 620 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Lane plan map"><rect width="620" height="420" fill="#f2eee7"/><g stroke="#d5d9df" stroke-width="2" fill="none"><path d="M0 90H130V0M0 220H620M0 280H195V90H620M65 420V150H330V0M120 420V220M330 420V150M420 420V0M0 46H230V420"/><path d="M65 280H120V220H240V150H330V90H420" stroke="#3b9f7c" stroke-width="6" stroke-dasharray="9 8"/></g><circle cx="65" cy="280" r="10" fill="#3b9f7c"/><circle cx="420" cy="90" r="10" fill="#111827" stroke="#3b9f7c" stroke-width="3"/><circle cx="120" cy="220" r="5" fill="#111827"/><circle cx="240" cy="150" r="5" fill="#111827"/><circle cx="330" cy="90" r="5" fill="#111827"/><text x="22" y="256" fill="#111827" font-size="12">Andheri East</text><text x="428" y="72" fill="#111827" font-size="12">Sion Hospital</text></svg></div></section><aside class="metrics"><div class="stat"><div class="stat-label">ETA</div><div class="stat-value">12<span>m</span></div><div class="stat-note">Within the critical care window.</div></div><div class="stat"><div class="stat-label">Traffic stress</div><div class="stat-value">24<span>%</span></div><div class="stat-note">Lower than baseline by 11 points.</div></div></aside></div><div class="lane-list"><div class="lane-item"><div class="lane-main"><div class="lane-badge">A</div><div><div class="lane-title">Ambulance corridor</div><div class="lane-meta">Priority lane released at 09:14</div></div></div><div class="lane-score good">94%</div></div><div class="lane-item"><div class="lane-main"><div class="lane-badge" style="background: #f7ecdf; color: var(--amber);">H</div><div><div class="lane-title">Hospital handoff</div><div class="lane-meta">Bed confirmed · ICU ready</div></div></div><div class="lane-score good">Ready</div></div><div class="lane-item"><div class="lane-main"><div class="lane-badge" style="background: #fff2c2; color: #8a5a00;">S</div><div><div class="lane-title">Signal coordination</div><div class="lane-meta">Three intersections pre-cleared</div></div></div><div class="lane-score warn">Stable</div></div></div></div></main></body></html>
+    <main class="page"><div class="wrap"><div class="header-row"><div><div class="eyebrow">LANE PLAN · ILLUSTRATIVE</div><h1>Connected route overview</h1><p>Sample route and metrics for demonstration only; live dispatch data is shown on the dashboard.</p></div><div class="status-pill">Illustrative plan</div></div><div class="grid"><section class="panel map-panel"><div class="map-meta"><span>Sample route</span><strong>Andheri East → Sion Hospital</strong></div><div class="map-box"><svg viewBox="0 0 620 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Illustrative lane plan map"><rect width="620" height="420" fill="#f2eee7"/><g stroke="#d5d9df" stroke-width="2" fill="none"><path d="M0 90H130V0M0 220H620M0 280H195V90H620M65 420V150H330V0M120 420V220M330 420V150M420 420V0M0 46H230V420"/><path d="M65 280H120V220H240V150H330V90H420" stroke="#3b9f7c" stroke-width="6" stroke-dasharray="9 8"/></g><circle cx="65" cy="280" r="10" fill="#3b9f7c"/><circle cx="420" cy="90" r="10" fill="#111827" stroke="#3b9f7c" stroke-width="3"/><circle cx="120" cy="220" r="5" fill="#111827"/><circle cx="240" cy="150" r="5" fill="#111827"/><circle cx="330" cy="90" r="5" fill="#111827"/><text x="22" y="256" fill="#111827" font-size="12">Andheri East</text><text x="428" y="72" fill="#111827" font-size="12">Sion Hospital</text></svg></div></section><aside class="metrics"><div class="stat"><div class="stat-label">Sample ETA</div><div class="stat-value">12<span>m</span></div><div class="stat-note">Illustrative value, not a live estimate.</div></div><div class="stat"><div class="stat-label">Traffic stress</div><div class="stat-value">—</div><div class="stat-note">Live traffic data is not connected.</div></div></aside></div><div class="lane-list"><div class="lane-item"><div class="lane-main"><div class="lane-badge">A</div><div><div class="lane-title">Ambulance corridor</div><div class="lane-meta">Illustrative route only</div></div></div><div class="lane-score good">Sample</div></div><div class="lane-item"><div class="lane-main"><div class="lane-badge" style="background: #f7ecdf; color: var(--amber);">H</div><div><div class="lane-title">Hospital handoff</div><div class="lane-meta">Illustrative; bed status is not live</div></div></div><div class="lane-score good">Sample</div></div><div class="lane-item"><div class="lane-main"><div class="lane-badge" style="background: #fff2c2; color: #8a5a00;">S</div><div><div class="lane-title">Signal coordination</div><div class="lane-meta">Signal controls are not connected</div></div></div><div class="lane-score warn">Demo</div></div></div><p><a class="primary-btn" href="/dashboard?demo=1">View live dispatch →</a></p></div></main></body></html>
 """
 
 DASHBOARD_PAGE_HTML = """
@@ -953,17 +953,43 @@ DASHBOARD_PAGE_HTML = """
       .tag.teal { color: #a9ead5; background: rgba(95,211,178,0.08); }
       .whatif { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
       .whatif button { border: 1px solid var(--line); background: rgba(255,255,255,0.02); color: var(--text); border-radius: 999px; padding: 8px 10px; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; }
+      .tab { display: block; color: var(--muted); text-decoration: none; }
+      .tab.active { color: var(--text); }
+      .map-loading::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 8px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; vertical-align: -1px; animation: feed-spin 0.8s linear infinite; }
+      .map-loading.connected::before { display: none; }
+      .map-loading.error { color: #ff9a9a; }
+      .map-loading.error::before { border-right-color: currentColor; animation: none; }
+      .live.disconnected .pulse { background: var(--red); box-shadow: 0 0 0 5px rgba(242,100,100,0.15); }
+      @keyframes feed-spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { .map-loading::before { animation-duration: 2s; } }
       @media (max-width: 1100px) { .dashboard-body { grid-template-columns: 1fr; } .map-panel { min-height: 580px; } .sidebar { border-top: 1px solid var(--line); } }
+      @media (max-width: 760px) {
+        .topbar { height: auto; min-height: 74px; }
+        .nav { height: auto; min-height: 74px; flex-wrap: wrap; gap: 10px 14px; padding: 12px 0; }
+        .tabs { order: 3; width: 100%; margin: 0; justify-content: space-between; gap: 10px; }
+        .status-cluster { gap: 8px; }
+        .map-surface { min-height: 500px; }
+        #live-map { min-height: 500px; }
+      }
+      @media (max-width: 420px) {
+        .nav { gap: 10px; }
+        .status-cluster { font-size: 0.62rem; }
+        .decision-counter { display: none; }
+        .ghost-btn { padding: 8px 10px; font-size: 0.62rem; }
+        .tab { font-size: 0.64rem; letter-spacing: 0.04em; }
+        .map-panel { padding: 10px 8px; }
+        .detail-panel { width: min(360px, 94%); padding: 14px; }
+      }
     </style>
   </head>
   <body>
-    <header class="topbar"><div class="wrap nav"><div class="brand"><span class="brand-mark">A</span>ADAS</div><div class="tabs"><div class="tab active">Map</div><div class="tab">Benchmarks</div></div><div class="status-cluster"><div class="live"><span class="pulse"></span> Live</div><div class="sim-time" id="sim-time">T+00:00</div><div class="decision-counter" id="decision-counter">Simulation</div></div><button class="ghost-btn" id="reset-demo">Reset demo</button></div></header>
+    <header class="topbar"><div class="wrap nav"><a href="/" class="brand" aria-label="ADAS home"><span class="brand-mark">A</span>ADAS</a><nav class="tabs" aria-label="Dashboard pages"><a class="tab active" href="/dashboard" aria-current="page">Map</a><a class="tab" href="/laning">Lane plan</a><a class="tab" href="/benchmarks">Benchmarks</a><a class="tab" href="/driver">Driver</a></nav><div class="status-cluster"><div class="live" id="connection-status" role="status"><span class="pulse"></span> Connecting</div><div class="sim-time" id="sim-time">T+00:00</div><div class="decision-counter" id="decision-counter">Decisions loading</div></div><button class="ghost-btn" id="reset-demo">Reset demo</button></div></header>
     <main class="dashboard-body">
       <section class="map-panel">
         <div class="map-surface">
           <div id="live-map" role="application" aria-label="Live ambulance dispatch map"></div>
           <div class="map-legend"><div>Legend</div><div class="legend-row"><span class="legend-dot" style="background: var(--red);"></span> Ambulance</div><div class="legend-row"><span class="legend-dot" style="background: var(--amber);"></span> Incident</div><div class="legend-row"><span class="legend-dot" style="background: var(--teal);"></span> Hospital</div></div>
-          <div class="map-loading" id="map-status">Connecting to dispatch feed...</div>
+          <div class="map-loading" id="map-status" role="status" aria-live="polite">Connecting to dispatch feed...</div>
         </div>
         <div class="detail-overlay">
           <aside class="detail-panel" id="incident-detail">
@@ -980,7 +1006,7 @@ DASHBOARD_PAGE_HTML = """
       </section>
 
       <aside class="sidebar">
-        <div class="section-head"><h3>Active incidents</h3><span style="color: var(--muted);" id="incident-count">0</span></div>
+        <div class="section-head" id="alerts"><h3>Active incidents</h3><span style="color: var(--muted);" id="incident-count">0</span></div>
         <div class="incident-list" id="incident-list"></div>
         <div class="section-head" style="margin-top: 18px;"><h3>Solver log</h3></div>
         <div class="log-box">
@@ -1029,8 +1055,9 @@ DASHBOARD_PAGE_HTML = """
         marker.addTo(markerLayer);
       }
 
-      function selectIncident(incident, assignment) {
+      function selectIncident(incident, assignment, reveal = true) {
         selectedIncidentId = incident.id;
+        if (reveal) document.getElementById('incident-detail').hidden = false;
         document.getElementById('detail-title').textContent = `Incident #${incident.id}`;
         document.getElementById('detail-severity').textContent = severityName(incident.severity);
         document.getElementById('detail-ambulance').textContent = assignment ? `Amb ${assignment.ambulance_id}` : 'Unassigned';
@@ -1082,9 +1109,19 @@ DASHBOARD_PAGE_HTML = """
         if (selectedIncidentId != null) {
           const selected = data.incidents.find((incident) => incident.id === selectedIncidentId);
           if (!selected) selectedIncidentId = null;
-          else selectIncident(selected, assignments.get(selected.id));
+          else selectIncident(selected, assignments.get(selected.id), false);
         }
         if (selectedIncidentId == null && data.incidents.length) selectIncident(data.incidents[0], assignments.get(data.incidents[0].id));
+        if (!data.incidents.length) {
+          const panel = document.getElementById('incident-detail');
+          panel.hidden = false;
+          document.getElementById('detail-title').textContent = 'No active incident';
+          document.getElementById('detail-severity').textContent = '—';
+          document.getElementById('detail-ambulance').textContent = '—';
+          document.getElementById('detail-hospital').textContent = '—';
+          document.getElementById('detail-eta').textContent = '—';
+          document.getElementById('detail-match').textContent = 'No active assignment';
+        }
       }
 
       async function refreshMap() {
@@ -1096,6 +1133,7 @@ DASHBOARD_PAGE_HTML = """
           await requestJson('/incidents/tick?dt_seconds=30', { method: 'POST' });
           await requestJson('/assignments/replan', { method: 'POST' });
           const data = await requestJson('/map/state');
+          const decisions = await requestJson('/benchmarks/decisions');
           markerLayer.clearLayers();
           routeLayer.clearLayers();
           data.hospitals.forEach((hospital) => addMarker(hospital, 'hospital', `Hospital ${hospital.id}`));
@@ -1111,17 +1149,23 @@ DASHBOARD_PAGE_HTML = """
               L.polyline(route.path.map((point) => [point.lat, point.lon]), { color: '#5fd3b2', weight: 4, opacity: 0.9, className: 'dispatch-route' }).addTo(routeLayer);
             }
           });
+          status.classList.remove('error');
+          status.classList.add('connected');
+          status.hidden = false;
           if (data.incidents.length && data.incidents.every((incident) => !incident.position)) {
             status.textContent = 'Graph coordinates unavailable for this scenario';
           } else {
             status.textContent = `${data.incidents.length} active · ${data.routes.length} routes`;
-            status.hidden = false;
             if (!map.userHasMoved) {
               const positions = [...data.hospitals, ...data.ambulances, ...data.incidents].filter((entity) => entity.position).map((entity) => [entity.position.lat, entity.position.lon]);
               if (positions.length) map.fitBounds(positions, { padding: [40, 40], maxZoom: 14 });
               map.userHasMoved = true;
             }
           }
+          const connection = document.getElementById('connection-status');
+          connection.classList.remove('disconnected');
+          connection.lastChild.textContent = ' Connected';
+          document.getElementById('decision-counter').textContent = `QAOA ${decisions.qaoa} · fallback ${decisions.fallback}`;
           const totalSeconds = Math.floor(data.current_time);
           document.getElementById('sim-time').textContent = `T+${String(Math.floor(totalSeconds / 3600)).padStart(2, '0')}:${String(Math.floor(totalSeconds % 3600 / 60)).padStart(2, '0')}`;
           renderIncidents(data);
@@ -1129,6 +1173,11 @@ DASHBOARD_PAGE_HTML = """
           lastFeedError = '';
         } catch (error) {
           status.textContent = error.message || 'Dispatch feed unavailable';
+          status.classList.remove('connected');
+          status.classList.add('error');
+          const connection = document.getElementById('connection-status');
+          connection.classList.add('disconnected');
+          connection.lastChild.textContent = ' Disconnected';
           if (lastFeedError !== status.textContent) console.error(error);
           lastFeedError = status.textContent;
         } finally {
@@ -1151,8 +1200,27 @@ DASHBOARD_PAGE_HTML = """
         document.getElementById('incident-detail').hidden = false;
         await refreshMap();
       });
+      if (window.location.hash === '#alerts') {
+        window.requestAnimationFrame(() => document.getElementById('alerts').scrollIntoView());
+      }
       map.on('dragstart', () => { map.userHasMoved = true; });
-      refreshMap();
+      async function startDashboard() {
+        if (new URLSearchParams(window.location.search).get('demo') === '1') {
+          try {
+            await requestJson('/incidents/demo/scenario', { method: 'POST' });
+          } catch (error) {
+            const status = document.getElementById('map-status');
+            status.textContent = error.message || 'Unable to load the demo scenario.';
+            status.classList.add('error');
+            document.getElementById('connection-status').lastChild.textContent = ' Disconnected';
+            document.getElementById('connection-status').classList.add('disconnected');
+            console.error(error);
+            return;
+          }
+        }
+        await refreshMap();
+      }
+      startDashboard();
       window.setInterval(refreshMap, 8000);
     </script>
   </body>
@@ -1187,6 +1255,8 @@ DRIVER_PAGE_HTML = """
       .confidence { display: flex; align-items: end; gap: 8px; }
       .confidence strong { font-size: clamp(2.2rem, 6vw, 3.1rem); letter-spacing: -0.08em; }
       .confidence span { color: var(--muted); font-size: 0.9rem; }
+      .driver-nav { display: flex; gap: 14px; margin-bottom: 18px; font-size: 0.8rem; }
+      .driver-nav a { color: var(--muted); }
       .map-card { background: linear-gradient(180deg, #101a23 0%, #152130 100%); border: 1px solid var(--line); border-radius: 22px; padding: 14px; }
       .map-box { position: relative; height: 240px; overflow: hidden; border-radius: 18px; background: #0c141c; }
       .map-box svg { display: block; width: 100%; height: 100%; }
@@ -1195,14 +1265,17 @@ DRIVER_PAGE_HTML = """
       .label { color: var(--muted); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; }
       .value { font-weight: 700; }
       .cta { margin-top: 22px; width: 100%; border: none; border-radius: 16px; height: 60px; background: linear-gradient(90deg, #fa7b4d, #ed5b52); color: white; font-size: 0.82rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 800; }
+      .cta:disabled { cursor: not-allowed; opacity: 0.55; }
+      .driver-message { min-height: 1.5em; color: var(--muted); font-size: 0.82rem; }
       @media (max-width: 420px) { .app { width: calc(100% - 16px); } }
     </style>
   </head>
   <body>
     <div class="app">
+      <nav class="driver-nav" aria-label="Page navigation"><a href="/">Overview</a><a href="/dashboard">Dashboard</a><a href="/benchmarks">Benchmarks</a></nav>
       <div class="status-bar">
-        <div class="badge">EN ROUTE</div>
-        <div class="confidence"><strong>94</strong><span>%</span></div>
+        <div class="badge" id="driver-status">Connecting</div>
+        <div class="confidence"><strong id="driver-incident">—</strong><span>incident</span></div>
       </div>
 
       <div class="map-card">
@@ -1212,21 +1285,199 @@ DRIVER_PAGE_HTML = """
             <g stroke="#223449" stroke-width="2" fill="none">
               <path d="M0 110H110V30H260V170H360M40 220V140H160V50H300V220M120 220V100M270 220V60"/>
             </g>
-            <path d="M40 150H110V95H200V68H300" stroke="#5fd3b2" stroke-width="5" stroke-dasharray="6 6" fill="none"/>
-            <circle cx="40" cy="150" r="8" fill="#f26464"/>
-            <circle cx="300" cy="68" r="10" fill="#0e1116" stroke="#5fd3b2" stroke-width="3"/>
+            <polyline id="driver-route" stroke="#5fd3b2" stroke-width="5" stroke-dasharray="6 6" fill="none"/>
+            <circle id="driver-start" r="8" fill="#f26464" hidden/>
+            <circle id="driver-end" r="10" fill="#0e1116" stroke="#5fd3b2" stroke-width="3" hidden/>
           </svg>
         </div>
       </div>
 
       <div class="info-stack">
-        <div class="info-row"><span class="label">Severity</span><span class="value">High</span></div>
-        <div class="info-row"><span class="label">Hospital</span><span class="value">Sion General</span></div>
-        <div class="info-row"><span class="label">ETA</span><span class="value">12 min</span></div>
+        <div class="info-row"><span class="label">Severity</span><span class="value" id="driver-severity">—</span></div>
+        <div class="info-row"><span class="label">Ambulance</span><span class="value" id="driver-ambulance">—</span></div>
+        <div class="info-row"><span class="label">Hospital</span><span class="value" id="driver-hospital">—</span></div>
+        <div class="info-row"><span class="label">ETA</span><span class="value" id="driver-eta">—</span></div>
       </div>
 
-      <button class="cta">Confirm arrival</button>
+      <button class="cta" id="confirm-arrival" disabled>Confirm arrival</button>
+      <p class="driver-message" id="driver-message" role="status" aria-live="polite">Loading current dispatch…</p>
     </div>
+    <script>
+      async function requestJson(url, options = {}) {
+        const response = await fetch(url, { ...options, cache: 'no-store' });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.detail || `Request failed (${response.status})`);
+        return payload;
+      }
+
+      async function loadDriverAssignment() {
+        const message = document.getElementById('driver-message');
+        const button = document.getElementById('confirm-arrival');
+        try {
+          const data = await requestJson('/map/state');
+          const incident = data.incidents[0];
+          const assignment = incident && data.routes.find((route) => route.incident_id === incident.id);
+          if (!incident) {
+            document.getElementById('driver-status').textContent = 'No active call';
+            message.textContent = 'There are no active incidents in the simulation.';
+            return;
+          }
+
+          document.getElementById('driver-incident').textContent = `#${incident.id}`;
+          document.getElementById('driver-severity').textContent = incident.severity >= 5 ? 'Critical' : incident.severity >= 4 ? 'High' : incident.severity === 3 ? 'Medium' : 'Low';
+          document.getElementById('driver-ambulance').textContent = assignment ? `Amb ${assignment.ambulance_id}` : 'Unassigned';
+          document.getElementById('driver-hospital').textContent = assignment?.hospital_id == null ? 'No match' : `Hospital ${assignment.hospital_id}`;
+          document.getElementById('driver-eta').textContent = assignment ? `${Math.ceil(assignment.travel_time_sec / 60)} min` : '—';
+          document.getElementById('driver-status').textContent = assignment ? 'EN ROUTE' : 'Unassigned';
+
+          if (assignment?.path?.length) {
+            const lats = assignment.path.map((point) => point.lat);
+            const lons = assignment.path.map((point) => point.lon);
+            const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+            const minLon = Math.min(...lons), maxLon = Math.max(...lons);
+            const project = (point) => {
+              const x = 24 + (maxLon === minLon ? 0.5 : (point.lon - minLon) / (maxLon - minLon)) * 312;
+              const y = 24 + (maxLat === minLat ? 0.5 : (maxLat - point.lat) / (maxLat - minLat)) * 172;
+              return `${x},${y}`;
+            };
+            document.getElementById('driver-route').setAttribute('points', assignment.path.map(project).join(' '));
+            const first = assignment.path[0], last = assignment.path[assignment.path.length - 1];
+            const [startX, startY] = project(first).split(',');
+            const [endX, endY] = project(last).split(',');
+            document.getElementById('driver-start').setAttribute('cx', startX);
+            document.getElementById('driver-start').setAttribute('cy', startY);
+            document.getElementById('driver-start').hidden = false;
+            document.getElementById('driver-end').setAttribute('cx', endX);
+            document.getElementById('driver-end').setAttribute('cy', endY);
+            document.getElementById('driver-end').hidden = false;
+          }
+
+          if (assignment) {
+            button.dataset.incidentId = incident.id;
+            button.dataset.ambulanceId = assignment.ambulance_id;
+            button.disabled = false;
+            message.textContent = 'Current assignment loaded from the dispatch feed.';
+          } else {
+            message.textContent = 'Waiting for an ambulance assignment.';
+          }
+        } catch (error) {
+          document.getElementById('driver-status').textContent = 'Feed unavailable';
+          message.textContent = error.message || 'Unable to load the current dispatch.';
+        }
+      }
+
+      document.getElementById('confirm-arrival').addEventListener('click', async (event) => {
+        const button = event.currentTarget;
+        button.disabled = true;
+        button.textContent = 'Recording…';
+        try {
+          const params = new URLSearchParams({ ambulance_id: button.dataset.ambulanceId });
+          const result = await requestJson(`/incidents/${button.dataset.incidentId}/resolve?${params}`, { method: 'POST' });
+          document.getElementById('driver-status').textContent = 'Resolved';
+          document.getElementById('driver-message').textContent = `Arrival confirmed for incident #${result.incident_id}.`;
+          button.textContent = 'Arrival confirmed';
+        } catch (error) {
+          document.getElementById('driver-message').textContent = error.message || 'Unable to confirm arrival.';
+          button.textContent = 'Confirm arrival';
+          button.disabled = false;
+        }
+      });
+
+      loadDriverAssignment();
+    </script>
+  </body>
+</html>
+"""
+
+BENCHMARKS_PAGE_HTML = """
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ADAS Benchmarks</title>
+    <style>
+      :root { --bg: #0f1115; --panel: #141a24; --line: rgba(255,255,255,0.1); --text: #edf4ff; --muted: #9aa8b9; --teal: #5fd3b2; --red: #f26464; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font: 16px Inter, Segoe UI, sans-serif; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1000px, calc(100% - 32px)); margin: 0 auto; }
+      header { border-bottom: 1px solid var(--line); }
+      nav { min-height: 72px; display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+      .brand { font-weight: 800; margin-right: auto; }
+      .nav-link { color: var(--muted); }
+      main { padding: 48px 0; }
+      h1 { margin: 0 0 8px; font-size: clamp(2rem, 5vw, 3rem); }
+      .muted { color: var(--muted); }
+      .card { margin-top: 22px; padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); }
+      .counts { display: flex; gap: 28px; flex-wrap: wrap; font-size: 1.2rem; }
+      .actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; }
+      button { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; background: #202b38; color: var(--text); font: inherit; cursor: pointer; }
+      button:disabled { cursor: wait; opacity: 0.6; }
+      pre { max-height: 440px; overflow: auto; padding: 16px; border-radius: 10px; background: #090c10; color: #c7eadc; white-space: pre-wrap; overflow-wrap: anywhere; }
+      @media (max-width: 560px) { nav { gap: 14px; padding: 14px 0; } .brand { width: 100%; } main { padding-top: 32px; } }
+    </style>
+  </head>
+  <body>
+    <header><nav class="wrap" aria-label="Page navigation"><a class="brand" href="/">ADAS</a><a class="nav-link" href="/dashboard">Map</a><a class="nav-link" href="/laning">Lane plan</a><a class="nav-link" href="/driver">Driver</a></nav></header>
+    <main class="wrap">
+      <h1>Solver benchmarks</h1>
+      <p class="muted">Decision counts are from the current in-memory run. Detailed benchmark requests may take time on first load.</p>
+      <section class="card" aria-labelledby="counts-title">
+        <h2 id="counts-title">Solver decisions</h2>
+        <div class="counts" id="decision-counts" role="status" aria-live="polite">Loading decision counts…</div>
+      </section>
+      <section class="card" aria-labelledby="data-title">
+        <h2 id="data-title">Detailed results</h2>
+        <p class="muted">These routes return simulator measurements, not production performance guarantees.</p>
+        <div class="actions">
+          <button type="button" data-endpoint="/benchmarks/scaling/preview">Load quick scaling results (n=2–3)</button>
+          <button type="button" data-endpoint="/benchmarks/qae-efficiency">Load QAE efficiency results</button>
+        </div>
+        <p class="muted" id="benchmark-status" role="status" aria-live="polite">Choose a result set to load.</p>
+        <pre id="benchmark-results" hidden></pre>
+      </section>
+    </main>
+    <script>
+      async function requestJson(url) {
+        const response = await fetch(url, { cache: 'no-store' });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.detail || `Request failed (${response.status})`);
+        return payload;
+      }
+
+      async function loadDecisionCounts() {
+        const target = document.getElementById('decision-counts');
+        try {
+          const counts = await requestJson('/benchmarks/decisions');
+          target.textContent = `QAOA ${counts.qaoa} · classical fallback ${counts.fallback}`;
+        } catch (error) {
+          target.textContent = error.message || 'Decision counts unavailable.';
+        }
+      }
+
+      document.querySelectorAll('[data-endpoint]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const status = document.getElementById('benchmark-status');
+          const results = document.getElementById('benchmark-results');
+          button.disabled = true;
+          status.textContent = 'Loading benchmark results…';
+          results.hidden = true;
+          try {
+            const data = await requestJson(button.dataset.endpoint);
+            results.textContent = JSON.stringify(data, null, 2);
+            results.hidden = false;
+            status.textContent = `${data.length} result rows loaded.`;
+          } catch (error) {
+            status.textContent = error.message || 'Benchmark results unavailable.';
+          } finally {
+            button.disabled = false;
+          }
+        });
+      });
+
+      loadDecisionCounts();
+    </script>
   </body>
 </html>
 """
@@ -1267,6 +1518,11 @@ DOCS_PAGE_HTML = """
     <div class="layout">
       <aside class="toc">
         <div style="font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px;">ADAS Docs</div>
+        <a href="/">Landing page</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/laning">Lane plan</a>
+        <a href="/benchmarks">Benchmarks</a>
+        <a href="/driver">Driver view</a>
         <a href="#architecture" class="active">Architecture overview</a>
         <a href="#qubo">QUBO formulation</a>
         <a href="#qaoa">QAOA + warm-start</a>
@@ -1338,6 +1594,11 @@ def driver_page() -> HTMLResponse:
 	return HTMLResponse(content=DRIVER_PAGE_HTML)
 
 
+@app.get("/benchmarks", include_in_schema=False)
+def benchmarks_page() -> HTMLResponse:
+	return HTMLResponse(content=BENCHMARKS_PAGE_HTML)
+
+
 @app.get("/docs", include_in_schema=False)
 def docs_page() -> HTMLResponse:
 	return HTMLResponse(content=DOCS_PAGE_HTML)
@@ -1352,4 +1613,6 @@ def health() -> dict[str, str]:
 def reset_demo() -> dict[str, str]:
 	init_simulation()
 	benchmarks.clear_benchmark_cache()
+	from adas.app_state import clear_request_log
+	clear_request_log()
 	return {"status": "reset"}

@@ -3,7 +3,7 @@
 import numpy as np
 from fastapi import APIRouter
 
-from adas.app_state import get_graph
+from adas.app_state import get_decision_log, get_graph
 from adas.baselines.monte_carlo_confidence import monte_carlo_on_time_probability
 from adas.benchmarks.qae_efficiency import run_qae_efficiency_benchmark
 from adas.benchmarks.scaling import run_scaling_benchmark
@@ -22,6 +22,11 @@ def benchmark_summary() -> dict[str, str]:
 	return {"status": "not yet implemented; see Phase 9"}
 
 
+@router.get("/decisions")
+def get_decision_counts() -> dict[str, int]:
+	return get_decision_log()
+
+
 @router.get("/scaling")
 def get_scaling_benchmark() -> list[dict[str, int | float]]:
 	if "scaling" not in _cached_results:
@@ -30,6 +35,17 @@ def get_scaling_benchmark() -> list[dict[str, int | float]]:
 			sizes=[2, 3, 4, 5],
 		)
 	return _cached_results["scaling"]
+
+
+@router.get("/scaling/preview")
+def get_scaling_preview() -> list[dict[str, int | float]]:
+	"""Return a small scaling sample suitable for interactive page loading."""
+	if "scaling_preview" not in _cached_results:
+		_cached_results["scaling_preview"] = run_scaling_benchmark(
+			get_graph(),
+			sizes=[2, 3],
+		)
+	return _cached_results["scaling_preview"]
 
 
 @router.get("/qae-efficiency")

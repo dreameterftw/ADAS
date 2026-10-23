@@ -35,8 +35,8 @@ def best_hospital_for_incident(
 	incident_node: int,
 	incident_severity: int,
 	hospitals: list[Hospital],
-) -> Hospital | None:
-	"""Return the nearest reachable hospital with beds and a matching specialty.
+) -> tuple[Hospital | None, str]:
+	"""Return the nearest reachable hospital and the reason for its selection.
 
 	If no reachable hospital offers a preferred specialty, choose the nearest
 	reachable hospital with capacity rather than returning no destination.
@@ -68,11 +68,11 @@ def best_hospital_for_incident(
 
 	preferred_reachable = reachable(preferred)
 	if preferred_reachable:
-		return min(preferred_reachable, key=lambda item: item[0])[1]
+		return min(preferred_reachable, key=lambda item: item[0])[1], "specialty_and_capacity"
 	any_reachable = reachable(candidates)
 	if any_reachable:
-		return min(any_reachable, key=lambda item: item[0])[1]
-	return None
+		return min(any_reachable, key=lambda item: item[0])[1], "fallback_any_capacity"
+	return None, "no_capacity_anywhere"
 
 
 def generate_hospital_fleet(

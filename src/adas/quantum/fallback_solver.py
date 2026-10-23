@@ -1,7 +1,8 @@
 """Run QAOA with a bounded wait and a classical simulated-annealing fallback."""
 
-from concurrent.futures import Future, ThreadPoolExecutor, TimeoutError as FutureTimeoutError
 import math
+import multiprocessing
+from multiprocessing.connection import Connection
 from time import perf_counter
 from typing import TypedDict
 
@@ -25,6 +26,60 @@ class FallbackResult(TypedDict, total=False):
 
 class SolverTimeout(TimeoutError):
 	"""Raised when QAOA exceeds the caller's time budget."""
+
+
+class _RemoteSolverError(RuntimeError):
+	def __init__(self, error_type: str, message: str) -> None:
+		super().__init__(message)
+		self.error_type = error_type
+
+
+def _qaoa_worker(program: QuadraticProgram, connection: Connection) -> None:
+	try:
+		connection.send(("result", solve_with_qaoa(program, use_warm_start=True)))
+	except Exception as error:
+		connection.send(("error", type(error).__name__, str(error)))
+	finally:
+		connection.close()
+
+
+def _run_qaoa_process(
+	program: QuadraticProgram,
+	timeout_sec: float,
+):
+	context = multiprocessing.get_context("spawn")
+	receive_connection, send_connection = context.Pipe(duplex=False)
+	process = context.Process(
+		target=_qaoa_worker,
+		args=(program, send_connection),
+	)
+	try:
+		process.start()
+	except Exception:
+		receive_connection.close()
+		send_connection.close()
+		raise
+	send_connection.close()
+
+	try:
+		if not receive_connection.poll(timeout_sec):
+			process.terminate()
+			process.join()
+			raise SolverTimeout("QAOA exceeded the configured timeout")
+		try:
+			message = receive_connection.recv()
+		except EOFError as error:
+			process.join()
+			raise RuntimeError("QAOA worker exited without returning a result") from error
+		process.join()
+		if message[0] == "error":
+			raise _RemoteSolverError(message[1], message[2])
+		return message[1]
+	finally:
+		receive_connection.close()
+		if process.is_alive():
+			process.terminate()
+		process.join()
 
 
 def _decode_qaoa_result(
@@ -134,19 +189,12 @@ def solve_with_fallback(
 	ambulances: list[Ambulance],
 	timeout_sec: float = 10.0,
 ) -> FallbackResult:
-	"""Run QAOA with a timeout, falling back on errors or invalid output.
-
-	The timeout bounds how long this caller waits. Python cannot forcibly stop a
-	QAOA call already executing in the worker thread, so it may finish in the
-	background after the classical fallback has returned.
-	"""
+	"""Run QAOA in a killable process, falling back on errors or invalid output."""
 	if not math.isfinite(timeout_sec) or timeout_sec <= 0:
 		raise ValueError("timeout_sec must be finite and positive")
 	started_at = perf_counter()
-	executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="adas-qaoa")
-	future: Future = executor.submit(solve_with_qaoa, program, use_warm_start=True)
 	try:
-		result = future.result(timeout=timeout_sec)
+		result = _run_qaoa_process(program, timeout_sec)
 		assignments = _decode_qaoa_result(
 			program,
 			graph,
@@ -154,9 +202,7 @@ def solve_with_fallback(
 			ambulances,
 			result,
 		)
-	except FutureTimeoutError:
-		future.cancel()
-		executor.shutdown(wait=False, cancel_futures=True)
+	except SolverTimeout:
 		return _run_fallback(
 			graph,
 			incidents,
@@ -165,15 +211,18 @@ def solve_with_fallback(
 			started_at,
 		)
 	except Exception as error:
-		executor.shutdown(wait=True)
+		reason = (
+			f"{error.error_type}: {error}"
+			if isinstance(error, _RemoteSolverError)
+			else f"{type(error).__name__}: {error}"
+		)
 		return _run_fallback(
 			graph,
 			incidents,
 			ambulances,
-			f"{type(error).__name__}: {error}",
+			reason,
 			started_at,
 		)
-	executor.shutdown(wait=True)
 	return {
 		"method": "qaoa",
 		"cost": _weighted_cost(assignments, incidents),

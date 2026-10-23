@@ -6,6 +6,7 @@ import networkx as nx
 from fastapi import APIRouter
 
 from adas.app_state import get_graph, get_hospitals, get_orchestrator, get_simulation_state
+from adas.baselines.closest_idle import ClosestIdleDispatch
 from adas.hospitals.matching import best_hospital_for_incident
 from adas.simulation.network import get_node_latlon, get_route_latlon
 
@@ -18,7 +19,20 @@ def replan_assignments() -> list[dict[str, Any]]:
 	state = get_simulation_state()
 	orchestrator = get_orchestrator()
 	graph = get_graph()
-	assignments = orchestrator.replan(state)
+	try:
+		assignments = orchestrator.replan(state)
+		solver_method = orchestrator.last_solver_methods
+		fallback_reasons = orchestrator.last_fallback_reasons
+	except Exception as error:
+		# Keep dispatch available when the optional quantum runtime is unavailable.
+		assignments = ClosestIdleDispatch().solve(graph, state.active_incidents, state.ambulances)
+		state.assignments = {assignment.incident_id: assignment for assignment in assignments}
+		assigned_ambulances = {assignment.ambulance_id for assignment in assignments}
+		for ambulance in state.ambulances:
+			if ambulance.id in assigned_ambulances:
+				ambulance.available = False
+		solver_method = {}
+		fallback_reasons = {assignment.incident_id: f"Quantum planner unavailable: {error.__class__.__name__}" for assignment in assignments}
 	incidents_by_id = {incident.id: incident for incident in state.active_incidents}
 	ambulances_by_id = {ambulance.id: ambulance for ambulance in state.ambulances}
 	hospitals = get_hospitals()
@@ -52,11 +66,11 @@ def replan_assignments() -> list[dict[str, Any]]:
 			"ambulance_id": assignment.ambulance_id,
 			"travel_time_sec": assignment.travel_time_sec,
 			"coordination_reason": assignment.coordination_reason,
-			"solver_method": orchestrator.last_solver_methods.get(
+			"solver_method": solver_method.get(
 				assignment.incident_id,
-				"unknown",
+				"closest_idle",
 			),
-			"fallback_reason": orchestrator.last_fallback_reasons.get(
+			"fallback_reason": fallback_reasons.get(
 				assignment.incident_id
 			),
 			"hospital_id": hospital.id if hospital is not None else None,

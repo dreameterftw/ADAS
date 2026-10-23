@@ -10,3 +10,5 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      - key: ALLOWED_ORIGINS
+        value: "https://adas-nav.web.app,https://adas-nav.firebaseapp.com,http://localhost:5173,http://127.0.0.1:5173"

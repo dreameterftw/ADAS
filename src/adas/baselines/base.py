@@ -14,6 +14,7 @@ class Assignment:
     incident_id: int
     ambulance_id: int
     travel_time_sec: float
+    coordination_reason: str = "in_zone"
 
 
 class DispatchStrategy:

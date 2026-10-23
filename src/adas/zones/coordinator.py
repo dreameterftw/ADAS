@@ -92,6 +92,7 @@ def reconcile_boundaries(
 		in_zone_time = best_time
 
 		incident_zone = zone_map.get(incident.location_node)
+		coordination_reason = "in_zone"
 		if incident.location_node in boundary_nodes and incident_zone is not None:
 			for candidate in ambulances:
 				candidate_zone = zone_map.get(candidate.current_node)
@@ -117,7 +118,13 @@ def reconcile_boundaries(
 		if best_ambulance.id != ambulance.id:
 			occupied_ambulances.discard(ambulance.id)
 			occupied_ambulances.add(best_ambulance.id)
+			coordination_reason = "reassigned_at_boundary"
 		final_assignments.append(
-			Assignment(incident_id, best_ambulance.id, best_time)
+			Assignment(
+				incident_id,
+				best_ambulance.id,
+				best_time,
+				coordination_reason,
+			)
 		)
 	return final_assignments

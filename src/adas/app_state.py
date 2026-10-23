@@ -22,6 +22,8 @@ _orchestrator: Orchestrator | None = None
 _hospitals: list[Hospital] | None = None
 _decision_log = {"qaoa": 0, "fallback": 0}
 _decision_log_lock = Lock()
+_request_log: list[dict[str, object]] = []
+_request_log_lock = Lock()
 
 
 def record_decision(method: str) -> None:
@@ -33,6 +35,22 @@ def record_decision(method: str) -> None:
 def get_decision_log() -> dict[str, int]:
 	with _decision_log_lock:
 		return dict(_decision_log)
+
+
+def add_request_record(record: dict[str, object]) -> None:
+	with _request_log_lock:
+		_request_log.insert(0, record)
+		del _request_log[100:]
+
+
+def get_request_log() -> list[dict[str, object]]:
+	with _request_log_lock:
+		return [record.copy() for record in _request_log]
+
+
+def clear_request_log() -> None:
+	with _request_log_lock:
+		_request_log.clear()
 
 
 def init_simulation(
@@ -93,7 +111,10 @@ def init_demo_scenario() -> None:
 
 def get_simulation_state() -> SimulationState:
 	if _state is None:
-		init_simulation()
+		try:
+			init_simulation()
+		except (ImportError, OSError, RuntimeError, ValueError):
+			init_demo_scenario()
 	assert _state is not None
 	return _state
 
@@ -101,20 +122,23 @@ def get_simulation_state() -> SimulationState:
 def get_graph() -> nx.MultiDiGraph:
 	"""Return the graph used by the shared simulation, initializing if needed."""
 	if _graph is None:
-		init_simulation()
+		try:
+			init_simulation()
+		except (ImportError, OSError, RuntimeError, ValueError):
+			init_demo_scenario()
 	assert _graph is not None
 	return _graph
 
 
 def get_orchestrator() -> Orchestrator:
 	if _orchestrator is None:
-		init_simulation()
+		get_graph()
 	assert _orchestrator is not None
 	return _orchestrator
 
 
 def get_hospitals() -> list[Hospital]:
 	if _hospitals is None:
-		init_simulation()
+		get_graph()
 	assert _hospitals is not None
 	return _hospitals
