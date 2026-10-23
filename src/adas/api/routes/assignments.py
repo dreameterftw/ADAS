@@ -33,6 +33,21 @@ def replan_assignments() -> list[dict[str, Any]]:
 				ambulance.available = False
 		solver_method = {}
 		fallback_reasons = {assignment.incident_id: f"Quantum planner unavailable: {error.__class__.__name__}" for assignment in assignments}
+	# A solver may return a partial valid plan after a zone timeout. Fill every
+	# remaining reachable call with a unique idle unit using the classical baseline.
+	assigned_incident_ids = {assignment.incident_id for assignment in assignments}
+	remaining_incidents = [incident for incident in state.active_incidents if incident.id not in assigned_incident_ids]
+	if remaining_incidents:
+		idle_ambulances = [ambulance for ambulance in state.ambulances if ambulance.available]
+		gap_assignments = ClosestIdleDispatch().solve(graph, remaining_incidents, idle_ambulances)
+		for assignment in gap_assignments:
+			assignments.append(assignment)
+			state.assignments[assignment.incident_id] = assignment
+			ambulance = next((unit for unit in idle_ambulances if unit.id == assignment.ambulance_id), None)
+			if ambulance is not None:
+				ambulance.available = False
+			solver_method[assignment.incident_id] = "closest_idle_recovery"
+			fallback_reasons[assignment.incident_id] = "The primary planner returned a partial plan."
 	incidents_by_id = {incident.id: incident for incident in state.active_incidents}
 	ambulances_by_id = {ambulance.id: ambulance for ambulance in state.ambulances}
 	hospitals = get_hospitals()

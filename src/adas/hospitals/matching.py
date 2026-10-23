@@ -8,7 +8,7 @@ import networkx as nx
 
 @dataclass
 class Hospital:
-	id: int
+	id: int | str
 	node: int
 	specialties: set[str]
 	available_beds: int

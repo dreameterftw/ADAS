@@ -10,11 +10,11 @@ router = APIRouter()
 
 @router.post("/{hospital_id}/pre-alert")
 def send_pre_alert(
-	hospital_id: int,
+	hospital_id: str,
 	incident_id: int = Query(),
 	eta_sec: float = Query(ge=0),
 	severity: int = Query(ge=1, le=5),
-) -> dict[str, int | float | str]:
+	) -> dict[str, int | float | str]:
 	"""Return a simulated ER pre-alert payload for dashboard display."""
 	if not math.isfinite(eta_sec):
 		raise HTTPException(status_code=422, detail="eta_sec must be finite")

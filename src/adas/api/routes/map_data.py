@@ -9,6 +9,7 @@ from adas.app_state import (
 	get_graph,
 	get_hospitals,
 	get_simulation_state,
+	get_traffic_mode,
 )
 from adas.hospitals.matching import best_hospital_for_incident
 
@@ -92,6 +93,7 @@ def get_map_state() -> dict[str, Any]:
 
 	return {
 		"current_time": state.current_time,
+		"traffic_mode": get_traffic_mode(),
 		"incidents": incident_items,
 		"ambulances": [
 			{

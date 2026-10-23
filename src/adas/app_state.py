@@ -24,6 +24,7 @@ _decision_log = {"qaoa": 0, "fallback": 0}
 _decision_log_lock = Lock()
 _request_log: list[dict[str, object]] = []
 _request_log_lock = Lock()
+_traffic_mode = "normal"
 
 
 def record_decision(method: str) -> None:
@@ -109,12 +110,80 @@ def init_demo_scenario() -> None:
 	_graph, _state, _orchestrator, _hospitals = graph, state, orchestrator, hospitals
 
 
+def init_showcase_scenario() -> None:
+	"""Load a repeatable multi-unit, multi-incident Mumbai response scenario."""
+	global _graph, _state, _orchestrator, _hospitals, _traffic_mode
+	graph = nx.MultiDiGraph()
+	rows = columns = 6
+	for row in range(rows):
+		for column in range(columns):
+			node = row * columns + column + 1
+			graph.add_node(node, y=19.105 + row * 0.004, x=72.825 + column * 0.004)
+	for row in range(rows):
+		for column in range(columns):
+			node = row * columns + column + 1
+			for next_row, next_column in ((row + 1, column), (row, column + 1)):
+				if next_row >= rows or next_column >= columns:
+					continue
+				other = next_row * columns + next_column + 1
+				axis = "vertical" if next_row != row else "horizontal"
+				major = (axis == "horizontal" and row in {2, 3}) or (axis == "vertical" and column in {2, 3})
+				travel_time = 65.0 if axis == "horizontal" else 82.0
+				attributes = {"travel_time": travel_time, "base_travel_time": travel_time, "axis": axis, "major_corridor": major}
+				graph.add_edge(node, other, **attributes)
+				graph.add_edge(other, node, **attributes)
+	incidents = [
+		Incident(101, 5, 5, 0.0),
+		Incident(102, 16, 4, 0.0),
+		Incident(103, 27, 3, 0.0),
+		Incident(104, 34, 5, 0.0),
+	]
+	ambulances = [Ambulance(unit_id, node) for unit_id, node in zip((10, 11, 12, 13, 14, 15), (1, 8, 19, 26, 36, 12))]
+	state = SimulationState(active_incidents=incidents, ambulances=ambulances)
+	orchestrator = Orchestrator(graph, max_nodes_per_zone=12, timeout_sec_per_zone=0.5)
+	hospitals = [
+		Hospital("H-A", 3, {"general", "cardiac"}, 3, 24),
+		Hospital("H-B", 15, {"general", "trauma"}, 2, 18),
+		Hospital("H-C", 29, {"general", "cardiac"}, 5, 32),
+		Hospital("H-D", 34, {"trauma"}, 1, 12),
+	]
+	_graph, _state, _orchestrator, _hospitals = graph, state, orchestrator, hospitals
+	_traffic_mode = "normal"
+	clear_request_log()
+
+
+def set_traffic_mode(mode: str) -> None:
+	global _traffic_mode
+	if mode not in {"normal", "peak", "event"}:
+		raise ValueError("Traffic mode must be normal, peak, or event.")
+	graph = get_graph()
+	for _source, _target, _key, data in graph.edges(keys=True, data=True):
+		base = float(data.get("base_travel_time", data.get("travel_time", 60.0)))
+		major = bool(data.get("major_corridor", False))
+		axis = data.get("axis")
+		if mode == "normal":
+			factor = 1.0
+		elif mode == "peak":
+			factor = 3.2 if major else 1.25
+		else:
+			factor = 7.0 if major else 1.1
+		data["travel_time"] = base * factor
+		data["traffic_level"] = "heavy" if factor >= 3 else "moderate" if factor > 1 else "normal"
+		if mode == "event" and major and axis == "horizontal":
+			data["traffic_level"] = "blocked"
+	_traffic_mode = mode
+
+
+def get_traffic_mode() -> str:
+	return _traffic_mode
+
+
 def get_simulation_state() -> SimulationState:
 	if _state is None:
 		try:
 			init_simulation()
 		except (ImportError, OSError, RuntimeError, ValueError):
-			init_demo_scenario()
+			init_showcase_scenario()
 	assert _state is not None
 	return _state
 
@@ -125,7 +194,7 @@ def get_graph() -> nx.MultiDiGraph:
 		try:
 			init_simulation()
 		except (ImportError, OSError, RuntimeError, ValueError):
-			init_demo_scenario()
+			init_showcase_scenario()
 	assert _graph is not None
 	return _graph
 

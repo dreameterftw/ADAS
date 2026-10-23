@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
-from adas.api.routes import assignments, benchmarks, hospitals, incidents, map_data
+from adas.api.routes import assignments, benchmarks, hospitals, incidents, map_data, operations
 from adas.app_state import init_simulation
 
 LANDING_PAGE_HTML = """
@@ -1572,6 +1572,7 @@ app.include_router(assignments.router, prefix="/assignments", tags=["assignments
 app.include_router(benchmarks.router, prefix="/benchmarks", tags=["benchmarks"])
 app.include_router(hospitals.router, prefix="/hospitals", tags=["hospitals"])
 app.include_router(map_data.router, prefix="/map", tags=["map"])
+app.include_router(operations.router, prefix="/operations", tags=["operations"])
 
 
 @app.get("/", include_in_schema=False)
