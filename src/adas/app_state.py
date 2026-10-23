@@ -168,10 +168,31 @@ def set_traffic_mode(mode: str) -> None:
 		else:
 			factor = 7.0 if major else 1.1
 		data["travel_time"] = base * factor
-		data["traffic_level"] = "heavy" if factor >= 3 else "moderate" if factor > 1 else "normal"
-		if mode == "event" and major and axis == "horizontal":
+		data["traffic_level"] = "closed" if data.get("closed") else "heavy" if factor >= 3 else "moderate" if factor > 1 else "normal"
+		if mode == "event" and major and axis == "horizontal" and not data.get("closed"):
 			data["traffic_level"] = "blocked"
 	_traffic_mode = mode
+
+
+def set_road_closure(source: int, target: int, closed: bool) -> None:
+	"""Apply a temporary bidirectional corridor closure and preserve its base cost."""
+	graph = get_graph()
+	if source not in graph or target not in graph or not (graph.has_edge(source, target) or graph.has_edge(target, source)):
+		raise ValueError("The selected road segment does not exist in the active network.")
+	for left, right in ((source, target), (target, source)):
+		if not graph.has_edge(left, right):
+			continue
+		for _key, data in graph[left][right].items():
+			data["closed"] = closed
+			base = float(data.get("base_travel_time", data.get("travel_time", 60.0)))
+			factor = 1.0 if _traffic_mode == "normal" else 3.2 if _traffic_mode == "peak" and data.get("major_corridor") else 1.25 if _traffic_mode == "peak" else 7.0 if data.get("major_corridor") else 1.1
+			data["travel_time"] = base * factor
+			if closed:
+				data["traffic_level"] = "closed"
+			elif _traffic_mode != "normal":
+				data["traffic_level"] = "heavy" if factor >= 3 else "moderate"
+			else:
+				data["traffic_level"] = "normal"
 
 
 def get_traffic_mode() -> str:

@@ -5,10 +5,11 @@ from typing import Any
 import networkx as nx
 from fastapi import APIRouter
 
-from adas.app_state import get_graph, get_hospitals, get_orchestrator, get_simulation_state
+from adas.app_state import get_graph, get_hospitals, get_orchestrator, get_simulation_state, get_traffic_mode
 from adas.baselines.closest_idle import ClosestIdleDispatch
+from adas.simulation.incidents import Ambulance
 from adas.hospitals.matching import best_hospital_for_incident
-from adas.simulation.network import get_node_latlon, get_route_latlon
+from adas.simulation.network import get_node_latlon, get_route_latlon, open_road_travel_time
 
 
 router = APIRouter()
@@ -68,14 +69,26 @@ def replan_assignments() -> list[dict[str, Any]]:
 					graph,
 					ambulance.current_node,
 					incident.location_node,
-					weight="travel_time",
+					weight=open_road_travel_time,
 				)
 				route = get_route_latlon(graph, path)
 			except (nx.NetworkXNoPath, nx.NodeNotFound):
 				pass
 		hospital_latitude = hospital_longitude = None
+		hospital_beds = None
+		hospital_specialties: list[str] = []
 		if hospital is not None:
 			hospital_latitude, hospital_longitude = get_node_latlon(graph, hospital.node)
+			hospital_beds = hospital.available_beds
+			hospital_specialties = sorted(hospital.specialties)
+		if hospital is None:
+			hospital_rationale = "No reachable hospital currently reports available beds."
+		elif match_reason == "specialty_and_capacity":
+			hospital_rationale = f"Hospital {hospital.id} has a preferred specialty and {hospital.available_beds} reported available beds."
+		else:
+			hospital_rationale = f"Hospital {hospital.id} is the nearest reachable facility reporting {hospital.available_beds} available beds; no preferred specialty match was available."
+		method = solver_method.get(assignment.incident_id, "closest_idle")
+		method_label = "QAOA" if method == "qaoa" else method.replace("_", " ")
 		response.append({
 			"incident_id": assignment.incident_id,
 			"ambulance_id": assignment.ambulance_id,
@@ -88,10 +101,54 @@ def replan_assignments() -> list[dict[str, Any]]:
 			"fallback_reason": fallback_reasons.get(
 				assignment.incident_id
 			),
+			"assignment_reason": (
+				f"Severity {incident.severity if incident is not None else 'unknown'} priority was considered; "
+				f"{method_label} selected this available unit "
+				f"for an estimated {max(1, round(assignment.travel_time_sec / 60))}-minute response under "
+				f"{get_traffic_mode()} traffic conditions. {hospital_rationale}"
+			),
 			"hospital_id": hospital.id if hospital is not None else None,
 			"hospital_match_reason": match_reason,
+			"hospital_available_beds": hospital_beds,
+			"hospital_specialties": hospital_specialties,
 			"hospital_lat": hospital_latitude,
 			"hospital_lon": hospital_longitude,
 			"route": route,
 		})
 	return response
+
+
+@router.get("/comparison")
+def compare_dispatch_baseline() -> dict[str, Any]:
+	"""Compare the current coordinated plan with a nearest-idle dispatch baseline."""
+	state = get_simulation_state()
+	graph = get_graph()
+	active_ids = {incident.id for incident in state.active_incidents}
+	optimized = [assignment for incident_id, assignment in state.assignments.items() if incident_id in active_ids]
+	# Compare both planners from the same fleet snapshot, independent of the
+	# availability flags changed when the optimized plan was committed.
+	assigned_ambulance_ids = {assignment.ambulance_id for assignment in optimized}
+	baseline_fleet = [
+		Ambulance(unit.id, unit.current_node, unit.available or unit.id in assigned_ambulance_ids)
+		for unit in state.ambulances
+	]
+	baseline = ClosestIdleDispatch().solve(graph, list(state.active_incidents), baseline_fleet)
+	optimized_total = sum(float(item.travel_time_sec) for item in optimized)
+	baseline_total = sum(item.travel_time_sec for item in baseline)
+	optimized_count, baseline_count = len(optimized), len(baseline)
+	return {
+		"baseline": "nearest available ambulance, greedily assigned",
+		"optimized": {
+			"assigned": optimized_count,
+			"unassigned": max(0, len(state.active_incidents) - optimized_count),
+			"combined_eta_sec": round(optimized_total, 1),
+		},
+		"baseline_result": {
+			"assigned": baseline_count,
+			"unassigned": max(0, len(state.active_incidents) - baseline_count),
+			"combined_eta_sec": round(baseline_total, 1),
+		},
+		"eta_delta_sec": round(baseline_total - optimized_total, 1) if optimized_count == baseline_count else None,
+		"same_coverage": optimized_count == baseline_count,
+		"note": "Combined estimated dispatch travel time; comparison uses the same incident and ambulance snapshot.",
+	}

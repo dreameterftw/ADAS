@@ -2,7 +2,7 @@
 
 Base URL: `http://127.0.0.1:8000`. Start locally with `PYTHONPATH=src python -m uvicorn adas.api.main:app --reload --port 8000` (PowerShell: set `$env:PYTHONPATH = "src"` first).
 
-Dispatch state and the operator request log are held in memory and reset when the process restarts. The road graph is loaded lazily the first time a route needs simulation data; `/health` does not trigger a network download. Routes do not provide user authentication; protect write endpoints before connecting external intake systems.
+Dispatch state and the operator request log are held in memory and reset when the process restarts. The road graph is loaded lazily the first time a route needs simulation data; `/health` does not trigger a network download. Most operator endpoints are intended for a controlled presentation environment and do not provide user authentication. The inbound ambulance GPS webhook is disabled unless `AMBULANCE_WEBHOOK_BEARER_TOKEN` is configured and always requires that token.
 
 | Method | Path | Purpose |
 | --- | --- | --- |
@@ -15,6 +15,13 @@ Dispatch state and the operator request log are held in memory and reset when th
 | `POST` | `/incidents/demo/scenario` | Load a deterministic scenario that exercises boundary reassignment and both fallback paths. |
 | `POST` | `/incidents/{incident_id}/resolve?ambulance_id=10` | Resolve an active incident and release its assigned ambulance. Returns `409` if the incident or ambulance assignment is invalid. |
 | `POST` | `/assignments/replan` | Replan active incidents using per-zone QAOA with a 10-second wait budget and simulated-annealing fallback. |
+| `GET` | `/assignments/comparison` | Compare the current plan with nearest-available-unit dispatch on the same incident and fleet snapshot. |
+| `GET` | `/operations/closures` | List selectable road segments and active closures. |
+| `PUT` | `/operations/closures` | Close or reopen a road segment and recalculate dispatch routes. Body: `{"source":1,"target":2,"closed":true}`. |
+| `POST` | `/operations/hospitals/fhir-bundle` | Import a FHIR R4 Bundle containing hospital `Location` and optional `HealthcareService` resources. Replaces the in-memory directory. |
+| `POST` | `/operations/ambulances/positions` | Receive authenticated AVL/GPS positions. Requires `Authorization: Bearer <AMBULANCE_WEBHOOK_BEARER_TOKEN>`. |
+| `GET` | `/operations/integrations` | Report configured hospital and ambulance sources and whether routing is scenario-only. |
+| `POST` | `/operations/sync` | Pull configured hospital and ambulance provider feeds. |
 | `POST` | `/hospitals/{hospital_id}/pre-alert?incident_id=1&eta_sec=120&severity=5` | Return a simulated ER pre-alert payload. |
 | `GET` | `/benchmarks/summary` | Phase 9 placeholder status. |
 | `GET` | `/benchmarks/scaling` | Cached QAOA/annealing scaling measurements for sizes 2 through 5. |
@@ -56,11 +63,13 @@ The endpoint returns `409` if the incident is not active or the ambulance is not
 {"current_time":600.0,"newly_active_count":2}
 ```
 
-`POST /assignments/replan` returns an array of assignments. Times are seconds; `fallback_reason` is `null` for QAOA results and explains why the classical fallback ran otherwise. `coordination_reason` is `in_zone` or `reassigned_at_boundary`; `hospital_match_reason` reports specialty-and-capacity selection, capacity-only fallback, or no reachable capacity:
+`POST /assignments/replan` returns an array of assignments. Times are seconds; `fallback_reason` is `null` for QAOA results and explains why the classical fallback ran otherwise. `assignment_reason` gives the priority, solver, traffic mode, hospital specialty, and reported bed rationale. `coordination_reason` is `in_zone` or `reassigned_at_boundary`; `hospital_match_reason` reports specialty-and-capacity selection, capacity-only fallback, or no reachable capacity:
 
 ```json
-[{"incident_id":1,"ambulance_id":2,"travel_time_sec":45.0,"coordination_reason":"in_zone","solver_method":"qaoa","fallback_reason":null,"hospital_id":7,"hospital_match_reason":"specialty_and_capacity"}]
+[{"incident_id":1,"ambulance_id":2,"travel_time_sec":45.0,"coordination_reason":"in_zone","solver_method":"qaoa","fallback_reason":null,"assignment_reason":"Severity 5 priority was considered; qaoa selected this available unit for an estimated 1-minute response under normal traffic conditions. Hospital 7 has a preferred specialty and 3 reported available beds.","hospital_id":7,"hospital_match_reason":"specialty_and_capacity","hospital_available_beds":3,"hospital_specialties":["trauma"]}]
 ```
+
+Road closures are omitted from route calculations. If a closure disconnects a call from the available fleet, that call remains unassigned rather than being routed across the closed segment. Traffic mode controls use scenario factors; no live traffic provider is connected.
 
 Fallback is applied per zone after a 10-second timeout by default. On expiry, the QAOA worker process is forcibly terminated, rather than only bounding the caller's wait. This remains a demo-level timeout, not a hard real-time execution guarantee.
 

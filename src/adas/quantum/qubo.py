@@ -4,6 +4,7 @@ import networkx as nx
 from qiskit_optimization import QuadraticProgram
 
 from adas.simulation.incidents import Ambulance, Incident
+from adas.simulation.network import open_road_travel_time
 
 
 def build_dispatch_qubo(
@@ -39,7 +40,7 @@ def build_dispatch_qubo(
 					graph,
 					ambulance.current_node,
 					incident.location_node,
-					weight="travel_time",
+					weight=open_road_travel_time,
 				)
 			except (nx.NetworkXNoPath, nx.NodeNotFound):
 				unreachable_pairs.append((incident.id, ambulance.id))

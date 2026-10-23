@@ -5,6 +5,8 @@ import random
 
 import networkx as nx
 
+from adas.simulation.network import open_road_travel_time
+
 
 @dataclass
 class Hospital:
@@ -58,7 +60,7 @@ def best_hospital_for_incident(
 						graph,
 						incident_node,
 						hospital.node,
-						weight="travel_time",
+						weight=open_road_travel_time,
 					)
 				)
 			except (nx.NetworkXNoPath, nx.NodeNotFound):

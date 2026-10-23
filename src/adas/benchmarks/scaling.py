@@ -10,6 +10,7 @@ from adas.quantum.qubo import build_dispatch_qubo
 from adas.quantum.qaoa_solver import solve_with_qaoa
 from adas.quantum.verify import brute_force_solve
 from adas.simulation.incidents import Ambulance, Incident, generate_ambulance_fleet, generate_incidents
+from adas.simulation.network import open_road_travel_time
 
 
 def _weighted_assignment_cost(
@@ -32,7 +33,7 @@ def _weighted_assignment_cost(
 			graph,
 			ambulance.current_node,
 			incident.location_node,
-			weight="travel_time",
+			weight=open_road_travel_time,
 		)
 		cost += float(travel_time) * (6 - incident.severity)
 	return cost

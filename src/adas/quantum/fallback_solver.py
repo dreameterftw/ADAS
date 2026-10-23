@@ -14,6 +14,7 @@ from adas.baselines.base import Assignment
 from adas.baselines.sim_annealing import SimulatedAnnealingDispatch
 from adas.quantum.qaoa_solver import solve_with_qaoa
 from adas.simulation.incidents import Ambulance, Incident
+from adas.simulation.network import open_road_travel_time
 
 
 class FallbackResult(TypedDict, total=False):
@@ -126,7 +127,7 @@ def _decode_qaoa_result(
 					graph,
 					ambulance.current_node,
 					incident.location_node,
-					weight="travel_time",
+					weight=open_road_travel_time,
 				)
 			)
 		except (nx.NetworkXNoPath, nx.NodeNotFound) as error:
@@ -142,7 +143,7 @@ def _decode_qaoa_result(
 						graph,
 						ambulance.current_node,
 						incident.location_node,
-						weight="travel_time",
+						weight=open_road_travel_time,
 					)
 				except (nx.NetworkXNoPath, nx.NodeNotFound):
 					continue

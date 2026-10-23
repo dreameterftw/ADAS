@@ -12,6 +12,7 @@ from adas.app_state import (
 	get_traffic_mode,
 )
 from adas.hospitals.matching import best_hospital_for_incident
+from adas.simulation.network import open_road_travel_time
 
 
 router = APIRouter()
@@ -65,14 +66,14 @@ def get_map_state() -> dict[str, Any]:
 				graph,
 				ambulance.current_node,
 				incident.location_node,
-				weight="travel_time",
+				weight=open_road_travel_time,
 			)
 			if hospital is not None:
 				hospital_path = nx.shortest_path(
 					graph,
 					incident.location_node,
 					hospital.node,
-					weight="travel_time",
+					weight=open_road_travel_time,
 				)
 				path_nodes.extend(hospital_path[1:])
 		except (nx.NetworkXNoPath, nx.NodeNotFound):

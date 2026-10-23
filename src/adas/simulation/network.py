@@ -42,6 +42,21 @@ DEFAULT_SPEED_KPH = {
 	"service": 15.0,
 	"road": 25.0,
 }
+
+
+def open_road_travel_time(_source: int, _target: int, edge_data: dict) -> float | None:
+	"""NetworkX weight callback that hides closed edges, including parallel roads."""
+	attributes = (
+		edge_data.values()
+		if edge_data and all(isinstance(value, dict) for value in edge_data.values())
+		else (edge_data,)
+	)
+	weights = [
+		float(data.get("travel_time", 1.0))
+		for data in attributes
+		if not data.get("closed")
+	]
+	return min(weights) if weights else None
 OSM_USER_AGENT = "ADAS-dispatch-demo/1.0"
 
 
@@ -254,7 +269,7 @@ def shortest_travel_time(
 			graph,
 			origin,
 			destination,
-			weight="travel_time",
+			weight=open_road_travel_time,
 		)
 	)
 

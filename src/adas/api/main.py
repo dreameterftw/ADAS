@@ -3,7 +3,7 @@
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import RedirectResponse
 
 from adas.api.routes import assignments, benchmarks, hospitals, incidents, map_data, operations
 from adas.app_state import init_simulation
@@ -1582,34 +1582,45 @@ app.include_router(map_data.router, prefix="/map", tags=["map"])
 app.include_router(operations.router, prefix="/operations", tags=["operations"])
 
 
+def _frontend_redirect(path: str = "/") -> RedirectResponse:
+	frontend_url = os.getenv("FRONTEND_URL", "https://adas-nav.web.app").rstrip("/")
+	return RedirectResponse(url=f"{frontend_url}{path}", status_code=307)
+
+
 @app.get("/", include_in_schema=False)
-def landing_page() -> HTMLResponse:
-	return HTMLResponse(content=LANDING_PAGE_HTML)
+def landing_page() -> RedirectResponse:
+	return _frontend_redirect()
 
 
 @app.get("/laning", include_in_schema=False)
-def lane_page() -> HTMLResponse:
-	return HTMLResponse(content=LANING_PAGE_HTML)
+@app.get("/lane-plan", include_in_schema=False)
+def lane_page() -> RedirectResponse:
+	return _frontend_redirect("/laning")
 
 
 @app.get("/dashboard", include_in_schema=False)
-def dashboard_page() -> HTMLResponse:
-	return HTMLResponse(content=DASHBOARD_PAGE_HTML)
+def dashboard_page() -> RedirectResponse:
+	return _frontend_redirect("/dashboard")
 
 
 @app.get("/driver", include_in_schema=False)
-def driver_page() -> HTMLResponse:
-	return HTMLResponse(content=DRIVER_PAGE_HTML)
+def driver_page() -> RedirectResponse:
+	return _frontend_redirect("/driver")
 
 
 @app.get("/benchmarks", include_in_schema=False)
-def benchmarks_page() -> HTMLResponse:
-	return HTMLResponse(content=BENCHMARKS_PAGE_HTML)
+def benchmarks_page() -> RedirectResponse:
+	return _frontend_redirect("/benchmarks")
 
 
 @app.get("/docs", include_in_schema=False)
-def docs_page() -> HTMLResponse:
-	return HTMLResponse(content=DOCS_PAGE_HTML)
+def docs_page() -> RedirectResponse:
+	return _frontend_redirect("/docs")
+
+
+@app.get("/integrations", include_in_schema=False)
+def integrations_page() -> RedirectResponse:
+	return _frontend_redirect("/integrations")
 
 
 @app.get("/health")

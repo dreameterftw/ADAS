@@ -8,6 +8,7 @@ from qiskit_optimization.algorithms import OptimizationResult
 from adas.baselines.base import Assignment
 from adas.quantum.fallback_solver import FallbackResult
 from adas.simulation.incidents import Ambulance, Incident
+from adas.simulation.network import open_road_travel_time
 
 
 def _flatten_assignments(
@@ -41,7 +42,7 @@ def _travel_time(
 				graph,
 				origin,
 				destination,
-				weight="travel_time",
+				weight=open_road_travel_time,
 			)
 		)
 	except (nx.NetworkXNoPath, nx.NodeNotFound):

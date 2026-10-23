@@ -4,6 +4,8 @@ import math
 
 import networkx as nx
 
+from adas.simulation.network import open_road_travel_time
+
 
 def congestion_factor(t_seconds: float, sim_duration_sec: float) -> float:
     """Return a smooth peak-hour multiplier for a simulation time."""
@@ -29,6 +31,6 @@ def travel_time_at(
         graph,
         origin,
         destination,
-        weight="travel_time",
+        weight=open_road_travel_time,
     )
     return float(base_time) * congestion_factor(t_seconds, sim_duration_sec)

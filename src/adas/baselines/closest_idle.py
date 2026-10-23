@@ -4,6 +4,7 @@ import networkx as nx
 
 from adas.baselines.base import Assignment, DispatchStrategy
 from adas.simulation.incidents import Ambulance, Incident
+from adas.simulation.network import open_road_travel_time
 
 
 class ClosestIdleDispatch(DispatchStrategy):
@@ -36,7 +37,7 @@ class ClosestIdleDispatch(DispatchStrategy):
 						graph,
 						ambulance.current_node,
 						incident.location_node,
-						weight="travel_time",
+						weight=open_road_travel_time,
 					)
 				except nx.NetworkXNoPath:
 					continue
