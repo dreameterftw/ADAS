@@ -1,5 +1,6 @@
 """FastAPI application exposing live simulation state."""
 
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
@@ -1298,9 +1299,14 @@ DOCS_PAGE_HTML = """
 
 
 app = FastAPI(title="ADAS API", docs_url=None, redoc_url=None, openapi_url=None)
+
+# Read allowed origins from environment variable, fall back to localhost for dev
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
+allowed_origins = [origin.strip() for origin in allowed_origins_str.split(",")]
+
 app.add_middleware(
 	CORSMiddleware,
-	allow_origins=["*"],
+	allow_origins=allowed_origins,
 	allow_methods=["*"],
 	allow_headers=["*"],
 )
