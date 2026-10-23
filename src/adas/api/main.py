@@ -1556,13 +1556,20 @@ DOCS_PAGE_HTML = """
 
 app = FastAPI(title="ADAS API", docs_url=None, redoc_url=None, openapi_url=None)
 
-# Read allowed origins from environment variable, fall back to localhost for dev
-allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
-allowed_origins = [origin.strip() for origin in allowed_origins_str.split(",")]
+# Keep deployed Firebase origins available even when the Render environment
+# variable is unset or only contains local development origins.
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "")
+allowed_origins = {
+	"https://adas-nav.web.app",
+	"https://adas-nav.firebaseapp.com",
+	"http://localhost:5173",
+	"http://127.0.0.1:5173",
+}
+allowed_origins.update(origin.strip() for origin in allowed_origins_str.split(",") if origin.strip())
 
 app.add_middleware(
 	CORSMiddleware,
-	allow_origins=allowed_origins,
+	allow_origins=sorted(allowed_origins),
 	allow_methods=["*"],
 	allow_headers=["*"],
 )
