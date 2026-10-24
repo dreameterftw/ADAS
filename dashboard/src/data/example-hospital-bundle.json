@@ -1,0 +1,82 @@
+{
+  "resourceType": "Bundle",
+  "id": "adas-fhir-r4-hospital-directory-example",
+  "meta": {
+    "profile": ["http://hl7.org/fhir/StructureDefinition/Bundle"]
+  },
+  "type": "collection",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:adas-location-h-a",
+      "resource": {
+        "resourceType": "Location",
+        "id": "H-A",
+        "status": "active",
+        "name": "Andheri Trauma Centre",
+        "position": { "latitude": 19.109, "longitude": 72.829 },
+        "extension": [
+          { "url": "https://adas.example/fhir/StructureDefinition/available-beds", "valueInteger": 8 },
+          { "url": "https://adas.example/fhir/StructureDefinition/total-beds", "valueInteger": 24 }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:adas-location-h-b",
+      "resource": {
+        "resourceType": "Location",
+        "id": "H-B",
+        "status": "active",
+        "name": "Central Cardiac Hospital",
+        "position": { "latitude": 19.117, "longitude": 72.837 },
+        "extension": [
+          { "url": "https://adas.example/fhir/StructureDefinition/available-beds", "valueInteger": 5 },
+          { "url": "https://adas.example/fhir/StructureDefinition/total-beds", "valueInteger": 18 }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:adas-location-h-c",
+      "resource": {
+        "resourceType": "Location",
+        "id": "H-C",
+        "status": "active",
+        "name": "Western General Hospital",
+        "position": { "latitude": 19.125, "longitude": 72.841 },
+        "extension": [
+          { "url": "https://adas.example/fhir/StructureDefinition/available-beds", "valueInteger": 12 },
+          { "url": "https://adas.example/fhir/StructureDefinition/total-beds", "valueInteger": 32 }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:adas-service-h-a",
+      "resource": {
+        "resourceType": "HealthcareService",
+        "id": "service-H-A",
+        "active": true,
+        "location": [{ "reference": "Location/H-A" }],
+        "specialty": [{ "coding": [{ "system": "https://adas.example/fhir/CodeSystem/specialty", "code": "trauma", "display": "Trauma care" }] }]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:adas-service-h-b",
+      "resource": {
+        "resourceType": "HealthcareService",
+        "id": "service-H-B",
+        "active": true,
+        "location": [{ "reference": "Location/H-B" }],
+        "specialty": [{ "coding": [{ "system": "https://adas.example/fhir/CodeSystem/specialty", "code": "cardiac", "display": "Cardiac care" }] }]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:adas-service-h-c",
+      "resource": {
+        "resourceType": "HealthcareService",
+        "id": "service-H-C",
+        "active": true,
+        "location": [{ "reference": "Location/H-C" }],
+        "specialty": [{ "coding": [{ "system": "https://adas.example/fhir/CodeSystem/specialty", "code": "general", "display": "Emergency and general care" }] }]
+      }
+    }
+  ]
+}

@@ -18,7 +18,12 @@ function pulsingIcon(color) {
   });
 }
 
-const ambulanceIcon = pulsingIcon(SIGNAL);
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" })[character]);
+}
+
+const incidentIcon = pulsingIcon(SIGNAL);
+const ambulanceIcon = pulsingIcon(CONFIDENCE);
 const hospitalIcon = L.divIcon({
   className: "",
   html: `<div class="map-hospital-ring"></div>`,
@@ -26,7 +31,7 @@ const hospitalIcon = L.divIcon({
   iconAnchor: [8, 8],
 });
 
-export default function MapView({ incidents, center = [19.119, 72.846], zoom = 13 }) {
+export default function MapView({ incidents, hospitals = [], ambulances = [], closedSegments = [], center = [19.119, 72.846], zoom = 13 }) {
   const mapRef = useRef(null);
   const containerRef = useRef(null);
   const markersRef = useRef([]);
@@ -59,10 +64,10 @@ export default function MapView({ incidents, center = [19.119, 72.846], zoom = 1
       if (inc.lat == null || inc.lon == null) continue; // skip until real coords wired in
       bounds.push([inc.lat, inc.lon]);
 
-      const marker = L.marker([inc.lat, inc.lon], { icon: ambulanceIcon })
+      const marker = L.marker([inc.lat, inc.lon], { icon: incidentIcon })
         .addTo(map)
         .bindPopup(
-          `<b>${inc.location_node ?? "Incident"}</b><br/>severity ${inc.severity}`
+          `<b>${escapeHtml(inc.location_node ?? "Incident")}</b><br/>severity ${escapeHtml(inc.severity)}`
         );
       markersRef.current.push(marker);
 
@@ -86,6 +91,31 @@ export default function MapView({ incidents, center = [19.119, 72.846], zoom = 1
       }
     }
 
+    for (const hospital of hospitals) {
+      const point = hospital.position ? [hospital.position.lat, hospital.position.lon] : hospital.lat != null && hospital.lon != null ? [hospital.lat, hospital.lon] : null;
+      if (!point) continue;
+      bounds.push(point);
+      markersRef.current.push(L.marker(point, { icon: hospitalIcon }).addTo(map).bindPopup(`<b>Hospital ${escapeHtml(hospital.id)}</b><br/>${escapeHtml(hospital.available_beds ?? "—")} available beds`));
+    }
+
+    for (const ambulance of ambulances) {
+      const point = ambulance.position ? [ambulance.position.lat, ambulance.position.lon] : ambulance.lat != null && ambulance.lon != null ? [ambulance.lat, ambulance.lon] : null;
+      if (!point) continue;
+      bounds.push(point);
+      markersRef.current.push(L.marker(point, { icon: ambulanceIcon }).addTo(map).bindPopup(`<b>Ambulance ${escapeHtml(ambulance.id)}</b><br/>${ambulance.available ? "Available" : "Assigned"}`));
+    }
+
+    for (const segment of closedSegments) {
+      const start = segment.source_position && [segment.source_position.lat, segment.source_position.lon];
+      const end = segment.target_position && [segment.target_position.lat, segment.target_position.lon];
+      if (!start || !end) continue;
+      bounds.push(start, end);
+      const line = L.polyline([start, end], { color: SIGNAL, weight: 7, dashArray: "7 7", opacity: 0.95 })
+        .addTo(map)
+        .bindPopup("Road closed · dispatch routes avoid this segment");
+      markersRef.current.push(line);
+    }
+
     const fitKey = bounds
       .map((point) => point.map((coordinate) => coordinate.toFixed(5)).join(","))
       .sort()
@@ -97,7 +127,7 @@ export default function MapView({ incidents, center = [19.119, 72.846], zoom = 1
         map.fitBounds(bounds, { padding: [48, 48], maxZoom: 17 });
       });
     }
-  }, [incidents]);
+  }, [incidents, hospitals, ambulances, closedSegments]);
 
-  return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
+  return <div className="map-shell"><div ref={containerRef} className="map-canvas" />{closedSegments.length > 0 && <div className="map-key"><span /> Closed road · routes avoid this segment</div>}</div>;
 }
